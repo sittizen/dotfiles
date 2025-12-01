@@ -1,9 +1,10 @@
 # Shell Tools
 
-## bat
+## bat , cat clone with syntax highlight
+https://github.com/sharkdp/bat
 
 
-## fd
+## fd , find entries in your filesystem
 https://github.com/sharkdp/fd?tab=readme-ov-file#installation
 
 ## fzf
