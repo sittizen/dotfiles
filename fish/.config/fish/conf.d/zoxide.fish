@@ -13,7 +13,7 @@ if test -n "$zoxide_hook"
     end
 end
 
-set --query zoxide_cmd || set --local zoxide_cmd z
+set --query zoxide_cmd || set --local zoxide_cmd c
 if test -n "$zoxide_cmd"
     function $zoxide_cmd
         __zoxide_z $argv

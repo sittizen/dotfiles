@@ -10,5 +10,4 @@ end
 fish_vi_key_bindings
 
 fzf --fish | source
-
 set FZF_DEFAULT_OPTS "--tmux center"
