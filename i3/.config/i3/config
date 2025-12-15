@@ -3,6 +3,7 @@
 set $mod Mod4
 font pango:DejaVu Sans Mono 8
 focus_on_window_activation none
+workspace_auto_back_and_forth yes
 
 exec --no-startup-id xset s off
 exec --no-startup-id nm-applet
@@ -60,14 +61,13 @@ workspace 3 output HDMI-A-0
 set $ws1 "1"
 set $ws2 "2"
 set $ws3 "3"
-# switch
+# switch to workspace
 bindsym $mod+Shift+j workspace number $ws1
 bindsym $mod+Shift+k workspace number $ws2
 bindsym $mod+Shift+l workspace number $ws3
-# move
-bindsym $mod+Shift+u move container to workspace number $ws1
-bindsym $mod+Shift+i move container to workspace number $ws2
-bindsym $mod+Shift+o move container to workspace number $ws3
+# move container
+bindsym $mod+Shift+u move container to workspace back_and_forth
+bindsym $mod+Shift+i move container to workspace number $ws3
 
 # reload the configuration file
 bindsym $mod+Shift+c reload
