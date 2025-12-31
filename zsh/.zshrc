@@ -48,9 +48,11 @@ zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 
 alias l='exa -1 -l --classify --icons --color-scale'
 alias lt='exa -1 -l --classify --icons --color-scale --tree'
-alias c='z'
 alias cat="batcat -p"
+alias vim='nvim'
 alias n='nvim .'
+alias y='yazi'
+alias c='z'
 alias v="set -gx VAULT_TOKEN (vault login -method=oidc -token-only 2>/dev/null)"
 alias vv="vault token renew $VAULT_TOKEN"
 alias vu="nmcli connection up 'gate_v6'"
