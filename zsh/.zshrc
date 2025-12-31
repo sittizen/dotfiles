@@ -26,7 +26,7 @@ autoload -U compinit && compinit
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-bindkey -e
+bindkey -v
 
 HISTSIZE=2000
 HISTFILE=~/.zsh_history
@@ -50,6 +50,7 @@ alias l='exa -1 -l --classify --icons --color-scale'
 alias lt='exa -1 -l --classify --icons --color-scale --tree'
 alias cat="batcat -p"
 alias vim='nvim'
+alias vi='nvim'
 alias n='nvim .'
 alias y='yazi'
 alias c='z'
@@ -59,7 +60,12 @@ alias vu="nmcli connection up 'gate_v6'"
 alias vd="nmcli connection down 'gate_v6'"
 alias git-prune="git branch --merged | egrep -v '(^\*|master|dev|production|test)' | xargs git branch -d" 
 
+..() {
+  cd ..
+}
+
 eval "$(fzf --zsh)"
 eval "$(zoxide init zsh)"
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
