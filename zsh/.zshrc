@@ -69,3 +69,6 @@ eval "$(zoxide init zsh)"
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
+
+# opencode
+export PATH=/home/simone.cittadini@gruppomol.lcl/.opencode/bin:$PATH
