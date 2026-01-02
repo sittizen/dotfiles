@@ -54,11 +54,13 @@ alias vi='nvim'
 alias n='nvim .'
 alias y='yazi'
 alias c='z'
-alias v="set -gx VAULT_TOKEN (vault login -method=oidc -token-only 2>/dev/null)"
 alias vv="vault token renew $VAULT_TOKEN"
 alias vu="nmcli connection up 'gate_v6'"
 alias vd="nmcli connection down 'gate_v6'"
 alias git-prune="git branch --merged | egrep -v '(^\*|master|dev|production|test)' | xargs git branch -d" 
+
+export VAULT_ADDR=https://vault.pycc.gmolapps.lcl
+v() { export VAULT_TOKEN=$(vault login -method=oidc -token-only 2>/dev/null) }
 
 ..() {
   cd ..
@@ -67,7 +69,11 @@ alias git-prune="git branch --merged | egrep -v '(^\*|master|dev|production|test
 eval "$(fzf --zsh)"
 eval "$(zoxide init zsh)"
 
+# fuzzy finder
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+# sesh 
+fpath=(~/.szh/completions $fpath)
 
 # opencode
 export PATH=/home/simone.cittadini@gruppomol.lcl/.opencode/bin:$PATH
