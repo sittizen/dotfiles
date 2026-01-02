@@ -33,7 +33,7 @@ HISTFILE=~/.zsh_history
 SAVEHIST=$HISTSIZE
 HISTDUP=erase
 setopt appendhistory
-setopt sharehistory
+# setopt sharehistory
 setopt hist_ignore_space
 setopt hist_ignore_all_dups
 setopt hist_save_no_dups
@@ -68,7 +68,6 @@ eval "$(fzf --zsh)"
 eval "$(zoxide init zsh)"
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-
 
 # opencode
 export PATH=/home/simone.cittadini@gruppomol.lcl/.opencode/bin:$PATH
