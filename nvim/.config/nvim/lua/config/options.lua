@@ -17,7 +17,7 @@ vim.opt.ignorecase = true
 vim.opt.smartcase = true
 vim.opt.signcolumn = "yes"
 vim.opt.updatetime = 250
-vim.opt.timeoutlen = 300
+vim.opt.timeoutlen = 320
 vim.opt.splitright = true
 vim.opt.splitbelow = true
 vim.opt.list = true
@@ -26,6 +26,7 @@ vim.opt.inccommand = "split"
 vim.opt.cursorline = true
 vim.opt.scrolloff = 12
 vim.opt.confirm = true
+-- vim.opt.conceallevel = 2
 
 vim.o.tabstop = 4
 vim.o.expandtab = true
