@@ -47,13 +47,27 @@ vim.api.nvim_set_keymap(
 	{ noremap = true, silent = true, desc = "Go to definition" }
 )
 
--- pysdk connected keymaps.
+local temp_buf = function(body)
+	-- pysdk connected keymaps.
+	vim.cmd("vsplit")
+	local buf = vim.api.nvim_create_buf(false, true)
+	vim.api.nvim_win_set_buf(0, buf)
+	vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(body, "\n"))
+	vim.bo[buf].buftype = "nofile"
+	vim.bo[buf].bufhidden = "wipe"
+	vim.bo[buf].filetype = "text"
+end
+
 vim.keymap.set("n", "<leader>it", function()
-	local filepath = vim.fn.expand("%:p")
-	local parts = vim.split(filepath, "/", { plain = true })
+	local scu = require("scutils")
+	local enclosing_test = scu.get_containing_function()
+	local parts = vim.split(vim.fn.expand("%:p"), "/", { plain = true })
 	filepath = table.concat(parts, "/", 9)
-	local res = require("pysdk").to_pysdk("x_run_test_fun -p " .. filepath)
-	require("opencode").prompt("Explain why this unit test is failing: " .. res)
+	local res = require("pysdk").to_pysdk("x_run_test_fun -p " .. filepath .. ":" .. enclosing_test)
+	local prompt = "Explain why this unit test is failing: \n" .. res
+	vim.schedule(function()
+		require("opencode").prompt(prompt)
+	end)
 end, { desc = "Launch Tests" })
 
 vim.keymap.set("n", "<leader>il", function()
@@ -61,5 +75,5 @@ vim.keymap.set("n", "<leader>il", function()
 	local parts = vim.split(filepath, "/", { plain = true })
 	filepath = table.concat(parts, "/", 8)
 	local res = require("pysdk").to_pysdk("x_run_lint -p " .. filepath)
-	print(res)
+	temp_buf(res)
 end, { desc = "Check linting" })
