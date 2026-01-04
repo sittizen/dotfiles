@@ -5,11 +5,11 @@ return {
 		require("conform").setup({
 			formatters_by_ft = {
 				lua = { "stylua" },
-				python = { "ruff_format" },
+				python = { "ruff" },
 			},
 		})
-		require("conform").formatters.ruff_format = {
-			prepend_args = { "format", "--line-length", "120" },
+		require("conform").formatters.ruff = {
+			prepend_args = {},
 		}
 		vim.api.nvim_create_autocmd("BufWritePre", {
 			pattern = "*",
