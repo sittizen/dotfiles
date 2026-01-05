@@ -1,3 +1,5 @@
+-- Disable default s as we use to start surrounding
+vim.keymap.set("n", "s", "<Nop>", { desc = "Disable default s key" })
 vim.keymap.set(
 	"n",
 	"<Esc>",
@@ -48,7 +50,6 @@ vim.api.nvim_set_keymap(
 )
 
 local temp_buf = function(body)
-	-- pysdk connected keymaps.
 	vim.cmd("vsplit")
 	local buf = vim.api.nvim_create_buf(false, true)
 	vim.api.nvim_win_set_buf(0, buf)
