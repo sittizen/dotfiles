@@ -80,7 +80,6 @@ export PATH=/home/simone.cittadini@gruppomol.lcl/.opencode/bin:$PATH
 
 # editor
 export EDITOR=nvim
-. "$HOME/.local/bin/env"
 
 # opencode
-export PATH=/home/sc/.opencode/bin:$PATH
+export PATH=~/.opencode/bin:$PATH
