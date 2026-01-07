@@ -1,5 +1,7 @@
 # AGENTS.md - General Codebase Guide
 
+- Complete what is asked: Execute the exact task specified without adding unrelated or out of scope content.
+
 ## Build/Test Commands
 - **Install deps**: `uv sync`
 - **Run tests**: `pytest` | Single test: `pytest tests/test_file.py::test_name -v`

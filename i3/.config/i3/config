@@ -5,6 +5,8 @@ font pango:DejaVu Sans Mono 8
 focus_on_window_activation none
 workspace_auto_back_and_forth yes
 
+exec --no-startup-id xrandr --output eDP --off
+exec --no-startup-id feh --bg-scale ~/Documents/bg.png
 exec --no-startup-id xset s off
 exec --no-startup-id nm-applet
 exec --no-startup-id picom --config  ~/.config/i3/picom.conf -b
@@ -28,7 +30,7 @@ bindsym $mod+5 exec --no-startup-id run_or_focus "obs"
 bindsym $mod+6 exec --no-startup-id run_or_focus "kdenlive"
 bindsym $mod+8 exec --no-startup-id run_or_focus "flameshot gui"
 
-# CONTAINERS
+# containers
 bindsym $mod+Shift+q kill
 bindsym $mod+r mode "resize"
 mode "resize" {
@@ -57,17 +59,11 @@ bindsym $mod+e layout toggle split
 # WORKSPACES
 workspace 1 output HDMI-A-0
 workspace 2 output HDMI-A-0
-workspace 3 output HDMI-A-0
 set $ws1 "1"
 set $ws2 "2"
-set $ws3 "3"
-# switch to workspace
-bindsym $mod+Shift+j workspace number $ws1
 bindsym $mod+Shift+k workspace number $ws2
-bindsym $mod+Shift+l workspace number $ws3
-# move container
+# seems this is enough to switch workspace ?!
 bindsym $mod+Shift+u move container to workspace back_and_forth
-bindsym $mod+Shift+i move container to workspace number $ws3
 
 # reload the configuration file
 bindsym $mod+Shift+c reload
