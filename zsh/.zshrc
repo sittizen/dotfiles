@@ -58,12 +58,19 @@ alias vv="vault token renew $VAULT_TOKEN"
 alias vu="nmcli connection up 'gate_v6'"
 alias vd="nmcli connection down 'gate_v6'"
 alias git-prune="git branch --merged | egrep -v '(^\*|master|dev|production|test)' | xargs git branch -d" 
+alias tma="timew start"
+alias tmo="timew stop"
+alias tms="timew summary"
 
 export VAULT_ADDR=https://vault.pycc.gmolapps.lcl
 v() { export VAULT_TOKEN=$(vault login -method=oidc -token-only 2>/dev/null) }
 
 ..() {
   cd ..
+}
+
+cs() {
+  sesh connect $(sesh list -t | fzf-tmux)
 }
 
 eval "$(fzf --zsh)"

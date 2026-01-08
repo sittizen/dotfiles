@@ -3,7 +3,6 @@
 ## bat , cat clone with syntax highlight
 https://github.com/sharkdp/bat
 
-
 ## fd , find entries in your filesystem
 https://github.com/sharkdp/fd?tab=readme-ov-file#installation
 
@@ -29,6 +28,8 @@ https://github.com/cli/cli/blob/trunk/docs/install_linux.md
 ## lazydocker
 
 ## btop
+
+## tw
 
 # GUIs
 
