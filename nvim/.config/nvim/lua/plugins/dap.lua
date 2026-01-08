@@ -7,6 +7,69 @@ return {
 			"theHamsta/nvim-dap-virtual-text",
 			"nvim-neotest/nvim-nio",
 		},
+		keys = {
+			{
+				"<leader>db",
+				function()
+					require("dap").toggle_breakpoint()
+				end,
+				desc = "Toggle breakpoint",
+			},
+
+			{
+				"<leader>dc",
+				function()
+					require("dap").continue()
+				end,
+				desc = "Continue / Start",
+			},
+
+			{
+				"<F6>",
+				function()
+					require("dap").step_into()
+				end,
+				desc = "Step Into",
+			},
+			{
+				"<F7>",
+				function()
+					require("dap").step_over()
+				end,
+				desc = "Step Over",
+			},
+			{
+				"<F8>",
+				function()
+					require("dap").step_out()
+				end,
+				desc = "Step Out",
+			},
+
+			{
+				"<F9>",
+				function()
+					require("dap").run_to_cursor()
+				end,
+				desc = "Run to cursor",
+			},
+
+			{
+				"<leader>dq",
+				function()
+					require("dap").terminate()
+				end,
+				desc = "Terminate debugging",
+			},
+
+			{
+				"<leader>dt",
+				function()
+					require("dapui").toggle()
+				end,
+				desc = "Toggle DAP UI",
+			},
+		},
 		config = function()
 			local dap = require("dap")
 			local dapui = require("dapui")
@@ -49,42 +112,6 @@ return {
 			dap.listeners.before.event_exited["dapui_config"] = function()
 				dapui.close()
 			end
-
-			vim.keymap.set("n", "<leader>db", function()
-				dap.toggle_breakpoint()
-			end, { desc = "Toggle breakpoint" })
-
-			vim.keymap.set("n", "<leader>dc", function()
-				dap.continue()
-			end, { desc = "Continue / Start" })
-
-			vim.keymap.set("n", "<leader>do", function()
-				dap.step_over()
-			end, { desc = "Step Over" })
-
-			vim.keymap.set("n", "<leader>di", function()
-				dap.step_into()
-			end, { desc = "Step Into" })
-
-			vim.keymap.set("n", "<leader>du", function()
-				dap.step_out()
-			end, { desc = "Step Out" })
-
-			vim.keymap.set("n", "<leader>dk", function()
-				dap.step_out()
-			end, { desc = "Step Back" })
-
-			vim.keymap.set("n", "<leader>dr", function()
-				dap.run_to_cursor()
-			end, { desc = "Run to cursor" })
-
-			vim.keymap.set("n", "<leader>dq", function()
-				require("dap").terminate()
-			end, { desc = "Terminate debugging" })
-
-			vim.keymap.set("n", "<leader>dt", function()
-				dapui.toggle()
-			end, { desc = "Toggle DAP UI" })
 		end,
 	},
 }
