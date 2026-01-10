@@ -82,9 +82,6 @@ eval "$(zoxide init zsh)"
 # sesh 
 fpath=(~/.szh/completions $fpath)
 
-# opencode
-export PATH=/home/simone.cittadini@gruppomol.lcl/.opencode/bin:$PATH
-
 # editor
 export EDITOR=nvim
 
