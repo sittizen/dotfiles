@@ -82,6 +82,25 @@ return {
 				commented = true, -- Show virtual text alongside comment
 			})
 
+			dap.configurations.python = dap.configurations.python or {}
+
+			table.insert(dap.configurations.python, {
+				type = "python",
+				request = "attach",
+				name = "Attach to debugpy in Docker",
+				connect = {
+					host = "192.168.1.32",
+					port = 5678,
+				},
+				pathMapping = {
+					{
+						localRoot = vim.fn.getcwd(),
+						remoteRoot = "/app",
+					},
+				},
+				justMyCode = false,
+			})
+
 			dap_python.setup("uv")
 
 			vim.fn.sign_define("DapBreakpoint", {
