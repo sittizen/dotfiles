@@ -1,7 +1,5 @@
 # AGENTS.md - Shared coding guidelines
 
-## Code Style
-
 ## Build/Test Commands
 
 ```bash

@@ -4,7 +4,7 @@ name: Document
 description: "Expert in documentation, API docs, and technical communication"
 category: content
 type: standard
-version: 1.0.0
+model: github-copilot/gpt-5.2
 mode: primary
 temperature: 0.2
 

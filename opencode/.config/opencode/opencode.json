@@ -3,6 +3,7 @@
   "autoupdate": true,
   "theme": "tokyonight",
   "model": "github-copilot/claude-opus-4.5",
+  "plugin": ["@plannotator/opencode@latest"],
   "share": "disabled",
   "tools": {
     "webfetch": false
