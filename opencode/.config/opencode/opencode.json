@@ -1,1 +1,38 @@
-config.json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "autoupdate": true,
+  "theme": "tokyonight",
+  "model": "github-copilot/claude-opus-4.5",
+  "share": "disabled",
+  "tools": {
+    "webfetch": false
+  },
+  "watcher": {
+    "ignore": [
+      "**/.assets/",
+      "**/.build/",
+      "**/.cache/",
+      "**/.html/",
+      "**/.mypy_cache/",
+      "**/.pytest_cache/",
+      "**/.venv/",
+      "**/.vscode-server/",
+      "**/__pycache__",
+      "**/.coverage",
+      "**/.DS_Store",
+      "**/.git",
+      "**/.hg",
+      "**/.svn",
+      "**/.vscode",
+      "**/*.egg-info",
+      "**/*.pyc",
+      "**/CVS",
+      "**/dist/",
+      "**/.gnupg/",
+      "**/.local/",
+      "**/.ssh/",
+      "**/.config/",
+      "**/.streamlit"
+    ]
+  }
+}
