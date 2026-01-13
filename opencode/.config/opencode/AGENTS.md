@@ -1,10 +1,10 @@
 # AGENTS.md - Shared coding guidelines
 
 
-## NEVER do the following actions:
+## Code styling and actions to avoid
 - NEVER Install dependencies automatically, ask the user to do it for you
 - NEVER do database migrations automatically, ask the user to do it for you
-- NEVER run locals server automatically
+- NEVER run local server automatically
 - NEVER format the code
 
 ## Quality Check / Test Commands
