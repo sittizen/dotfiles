@@ -21,6 +21,10 @@ zinit light zsh-users/zsh-completions
 zinit light zsh-users/zsh-autosuggestions
 zinit light Aloxaf/fzf-tab
 
+# Git completions (load before compinit)
+zinit ice wait lucid as"completion" blockf
+zinit snippet https://github.com/git/git/raw/master/contrib/completion/git-completion.zsh
+
 autoload -U compinit && compinit
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
@@ -41,6 +45,8 @@ setopt hist_ignore_dups
 setopt hist_find_no_dups
 
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+zstyle ':completion:*:descriptions' format '[%d]'
+zstyle ':completion:*:git-checkout:*' sort false
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}" 
 zstyle ':completion:*' menu no
 zstyle ':fzf-tab:*' fzf-bindings 'tab:accept'

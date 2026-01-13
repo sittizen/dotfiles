@@ -1,17 +1,15 @@
 # AGENTS.md - Shared coding guidelines
 
+
+## NEVER do the following actions:
+- NEVER Install dependencies automatically, ask the user to do it for you
+- NEVER do database migrations automatically, ask the user to do it for you
+- NEVER run locals server automatically
+- NEVER format the code
+
 ## Quality Check / Test Commands
 
 ```bash
-# Install dependencies
-# NEVER Install dependencies automatically, ask the user to do it for you
-
-# Database migrations
-# NEVER do database migrations automatically, ask the user to do it for you
-
-# Run local server
-# NEVER run locals server automatically
-
 # Run all unit tests
 troll test
 
