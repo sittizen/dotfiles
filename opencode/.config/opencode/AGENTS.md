@@ -1,7 +1,7 @@
 # AGENTS.md - Shared coding guidelines
 
 
-## Code styling and actions to avoid
+## Build actions to avoid
 - NEVER Install dependencies automatically, ask the user to do it for you
 - NEVER do database migrations automatically, ask the user to do it for you
 - NEVER run local server automatically
@@ -39,6 +39,10 @@ troll "x_sec -p src/app.py"
 ```
 
 ## Coding Conventions
+
+### Import
+
+NEVER order imports
 
 ### Type Hints
 
