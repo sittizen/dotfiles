@@ -1,11 +1,11 @@
 # AGENTS.md - Shared coding guidelines
 
 
-## Build actions to avoid
+## **ALWAYS AVOID** doing these actions
 - NEVER Install dependencies automatically, ask the user to do it for you
 - NEVER do database migrations automatically, ask the user to do it for you
-- NEVER run local server automatically
 - NEVER format the code
+- NEVER order imports
 
 ## Quality Check / Test Commands
 
@@ -40,19 +40,16 @@ troll "x_sec -p src/app.py"
 
 ## Coding Conventions
 
-### Import
-
-NEVER order imports
-
 ### Type Hints
 
-- Use Python 3.10+ union syntax: `str | None`, `list[T]`, `dict[K, V]`
+- Use Python 3.10+ syntax: `str | None`, `list[T]`, `dict[K, V]`
 - Annotate ALL function signatures (parameters and return types)
 - Use `TypedDict` for structured dictionaries
 
 ```python
-def get_pos(self, cod: str) -> _Posizione:
-    return cast(_Posizione, self.posizioni[cod].posizione)
+def fun(self, cod: str) -> bool | None:
+    ...
+    return True 
 ```
 ### Naming Conventions
 
@@ -64,4 +61,3 @@ def get_pos(self, cod: str) -> _Posizione:
 | Constants | UPPER_CASE | `TOLERANCE`, `SEDE`, `DEPLOY_ENV` |
 | Private attributes | _prefix_snake | `_sl`, `_op`, `_resto`, `_tt` |
 | Abstract base classes | _Prefix_Pascal | `_Evento`, `_Posizione`, `_Portafoglio` |
-
