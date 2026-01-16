@@ -9,33 +9,10 @@
 
 ## Quality Check / Test Commands
 
+The "do" shell utility is available to perform a wide range of check and tests on code, you can get a complete list of functions running:
+
 ```bash
-# Run all unit tests
-troll test
-
-# Run single unit test file
-troll "x_test -p tests/test_internal.py"
-
-# Run specific unit test in a file
-troll "x_test -p tests/test_internal.py::test_internal"
-
-# Linting check all project
-troll lint
-
-# Linting check single file
-troll "x_lint -p src/app.py"
-
-# Type check all project
-troll tc_src
-
-# Type check single file
-troll "x_typecheck -p src/app.py"
-
-# Security check all project
-troll sec
-
-# Security check single file
-troll "x_sec -p src/app.py"
+do list
 ```
 
 ## Coding Conventions
