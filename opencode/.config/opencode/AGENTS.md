@@ -1,19 +1,18 @@
 # AGENTS.md - Shared coding guidelines
 
+## Available Coding Tools:  lint, typing, test, security
 
-## **ALWAYS AVOID** doing these actions
-- NEVER Install dependencies automatically, ask the user to do it for you
-- NEVER do database migrations automatically, ask the user to do it for you
-- NEVER format the code
-- NEVER order imports
-
-## Quality Check / Test Commands
-
-The "do" shell utility is available to perform a wide range of check and tests on code, you can get a complete list of functions running:
+**ALWAYS** use the "doit" shell utility as a first choice.
+The "doit" shell utility is available to perform a wide range of checks and tests on code, you can get a complete list of tools running:
 
 ```bash
-do list
+doit list
 ```
+**ALWAYS AVOID** doing these actions
+- NEVER Install dependencies automatically, ask the user to do it for you
+- NEVER do database migrations automatically, ask the user to do it for you
+- NEVER format the code or order imports
+
 
 ## Coding Conventions
 

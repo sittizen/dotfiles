@@ -12,6 +12,7 @@
     "ignore": [
       "**/.assets/",
       "**/.build/",
+      "**/.doc/sessions/",
       "**/.cache/",
       "**/.html/",
       "**/.mypy_cache/",
