@@ -2,7 +2,7 @@
 
 ## Available Coding Tools: lint, typing, test, security
 
-**ALWAYS** use the "doit" shell utility as a first choice.
+**ALWAYS USE** the "doit" shell utility as a first choice.
 The "doit" shell utility is available to perform linting, testing and security checks on code. You can get a list of commands with: 
 
 ```bash
@@ -10,6 +10,9 @@ doit list lint # format and lint
 doit list test # unit tests
 doit list sec  # security checks
 ```
+
+**ALWAYS USE** context7 MCP when I need library/API documentation and code generation without me having to explicitly ask.
+
 **ALWAYS AVOID** doing these actions.
 - NEVER Install dependencies automatically, ask me to do it for you
 - NEVER do database migrations automatically, ask me to do it for you
