@@ -1,16 +1,18 @@
 # AGENTS.md - Shared coding guidelines
 
-## Available Coding Tools:  lint, typing, test, security
+## Available Coding Tools: lint, typing, test, security
 
 **ALWAYS** use the "doit" shell utility as a first choice.
-The "doit" shell utility is available to perform a wide range of checks and tests on code, you can get a complete list of tools running:
+The "doit" shell utility is available to perform linting, testing and security checks on code. You can get a list of commands with: 
 
 ```bash
-doit list
+doit list lint # format and lint
+doit list test # unit tests
+doit list sec  # security checks
 ```
-**ALWAYS AVOID** doing these actions
-- NEVER Install dependencies automatically, ask the user to do it for you
-- NEVER do database migrations automatically, ask the user to do it for you
+**ALWAYS AVOID** doing these actions.
+- NEVER Install dependencies automatically, ask me to do it for you
+- NEVER do database migrations automatically, ask me to do it for you
 - NEVER format the code or order imports
 
 
@@ -37,3 +39,23 @@ def fun(self, cod: str) -> bool | None:
 | Constants | UPPER_CASE | `TOLERANCE`, `SEDE`, `DEPLOY_ENV` |
 | Private attributes | _prefix_snake | `_sl`, `_op`, `_resto`, `_tt` |
 | Abstract base classes | _Prefix_Pascal | `_Evento`, `_Posizione`, `_Portafoglio` |
+
+## Configuration Files
+
+| File | Purpose |
+|------|---------|
+| `pyproject.toml` | Project config, dependencies, tools settings |
+
+## Plan Submission
+
+When you have completed your plan, you MUST call the `submit_plan` tool to submit it for user review.
+The user will be able to:
+- Review your plan visually in a dedicated UI
+- Annotate specific sections with feedback
+- Approve the plan to proceed with implementation
+- Request changes with detailed feedback
+
+If your plan is rejected, you will receive the user's annotated feedback. Revise your plan
+based on their feedback and call `submit_plan` again.
+
+Do NOT proceed with implementation until your plan is approved.

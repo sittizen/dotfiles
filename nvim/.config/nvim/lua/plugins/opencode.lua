@@ -19,7 +19,7 @@ return {
 		vim.keymap.set({ "n", "x" }, "<leader>os", function()
 			require("opencode").select()
 		end, { desc = "Select prompt" })
-		vim.keymap.set({ "n", "x" }, "<leader>o+", function()
+		vim.keymap.set({ "n", "x" }, "<leader>op", function()
 			require("opencode").prompt("@this")
 		end, { desc = "Add this" })
 		vim.keymap.set("n", "<leader>ot", function()
