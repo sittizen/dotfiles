@@ -70,8 +70,15 @@ alias tma="timew start"
 alias tmo="timew stop"
 alias tms="timew summary"
 
+export OPENCODE_EXPERIMENTAL_LSP_TOOL=true
 export VAULT_ADDR=https://vault.pycc.gmolapps.lcl
-v() { export VAULT_TOKEN=$(vault login -method=oidc -token-only 2>/dev/null) }
+
+v() { 
+  export VAULT_TOKEN=$(vault login -method=oidc -token-only 2>/dev/null)
+  export CONTEXT7_API_KEY=$(vault read -format=json kv/loc/simone.cittadini/zsh 2>/dev/null | jq -r .data.ctx7)
+}
+
+v
 
 ..() {
   cd ..
@@ -95,3 +102,11 @@ export EDITOR=nvim
 
 # opencode
 export PATH=~/.opencode/bin:$PATH
+
+# bun completions
+[ -s "/home/simone.cittadini@gruppomol.lcl/.bun/_bun" ] && source "/home/simone.cittadini@gruppomol.lcl/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
+
