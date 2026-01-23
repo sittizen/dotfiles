@@ -6,15 +6,14 @@
   "plugin": ["@plannotator/opencode@latest"],
   "share": "disabled",
   "tools": {
-    "webfetch": true
+    "webfetch": false
   },
   "mcp": {
   "context7": {
     "type": "remote",
     "url": "https://mcp.context7.com/mcp",
     "headers": {
-      "CONTEXT7_API_KEY": "ctx7sk-63e8eee3-2c2b-4101-a810-05f045dba0a6",
-      "Authorization": "Bearer ctx7sk-63e8eee3-2c2b-4101-a810-05f045dba0a6"
+      "CONTEXT7_API_KEY": "{env:CONTEXT7_API_KEY}"
     },
     "enabled": true
   }
