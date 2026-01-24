@@ -69,6 +69,7 @@ alias git-prune="git branch --merged | egrep -v '(^\*|master|dev|production|test
 alias tma="timew start"
 alias tmo="timew stop"
 alias tms="timew summary"
+alias oc="opencode ."
 
 export OPENCODE_EXPERIMENTAL_LSP_TOOL=true
 export VAULT_ADDR=https://vault.pycc.gmolapps.lcl
