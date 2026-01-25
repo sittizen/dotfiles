@@ -21,6 +21,10 @@ https://github.com/joshmedeski/sesh
 ## gh cli
 https://github.com/cli/cli/blob/trunk/docs/install_linux.md
 
+# dev tools
+
+## beads
+
 # TUIs
 
 ## lazygit
@@ -41,3 +45,4 @@ https://github.com/cli/cli/blob/trunk/docs/install_linux.md
 https://obsproject.com/
 
 ## kdenlive
+

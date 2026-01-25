@@ -1,6 +1,6 @@
 command = tmux
 window-decoration = none
-theme = Oceanic-Next
+theme = Oceanic Next
 shell-integration = zsh
 font-family = FiraCode Nerd Font Propo Med
 font-size = 18

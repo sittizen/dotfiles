@@ -72,12 +72,23 @@ alias tms="timew summary"
 alias oc="opencode ."
 
 export OPENCODE_EXPERIMENTAL_LSP_TOOL=true
-export VAULT_ADDR=https://vault.pycc.gmolapps.lcl
+export EDITOR=nvim
 
-v() { 
-  export VAULT_TOKEN=$(vault login -method=oidc -token-only 2>/dev/null)
-  export CONTEXT7_API_KEY=$(vault read -format=json kv/loc/simone.cittadini/zsh 2>/dev/null | jq -r .data.ctx7)
-}
+# vault
+if [[ "$(hostname)" == "leona" ]]; then
+  export VAULT_ADDR=https://127.0.0.1:8200
+  export VAULT_SKIP_VERIFY=true
+  v() { 
+    export VAULT_TOKEN=$(sed -n '2p' ~/workspace/.uk)
+    export CONTEXT7_API_KEY=$(vault kv get -format=json kv/leona/zsh 2>/dev/null | jq -r .data.data.ctx7)
+  }
+else
+  export VAULT_ADDR=https://vault.pycc.gmolapps.lcl
+  v() { 
+    export VAULT_TOKEN=$(vault login -method=oidc -token-only 2>/dev/null)
+    export CONTEXT7_API_KEY=$(vault read -format=json kv/loc/simone.cittadini/zsh 2>/dev/null | jq -r .data.ctx7)
+  }
+fi
 
 v
 
@@ -85,29 +96,13 @@ v
   cd ..
 }
 
+# sesh 
 cs() {
   sesh connect $(sesh list -t | fzf-tmux)
 }
-
-eval "$(fzf --zsh)"
-eval "$(zoxide init zsh)"
-
-# fuzzy finder
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-
-# sesh 
 fpath=(~/.szh/completions $fpath)
 
-# editor
-export EDITOR=nvim
-
-# opencode
-export PATH=~/.opencode/bin:$PATH
-
-# bun completions
-[ -s "/home/simone.cittadini@gruppomol.lcl/.bun/_bun" ] && source "/home/simone.cittadini@gruppomol.lcl/.bun/_bun"
-
-# bun
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
+# fuzzy finder
+eval "$(fzf --zsh)"
+eval "$(zoxide init zsh)"
 
