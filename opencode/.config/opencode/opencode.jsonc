@@ -22,7 +22,8 @@
   }
 },
   "permission": {
-    "lsp":"allow" 
+    "lsp":"allow" ,
+    "ralph-tui-prd":"allow"
   },
   "watcher": {
     "ignore": [

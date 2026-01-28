@@ -36,10 +36,11 @@ end
 
 return {
 	cmd = { "pyright-langserver", "--stdio" },
+	-- cmd = vim.lsp.rpc.connect('192.168.1.24', 9257),
 	filetypes = { "python" },
 	root_markers = {
-		".venv",
 		"pyproject.toml",
+		".venv",
 	},
 	settings = {
 		python = {

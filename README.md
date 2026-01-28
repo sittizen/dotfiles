@@ -23,6 +23,18 @@ https://github.com/cli/cli/blob/trunk/docs/install_linux.md
 
 # dev tools
 
+## opencode
+
+### plannotator
+
+### context7
+
+### context analysis, fast useful during session
+https://github.com/IgorWarzocha/Opencode-Context-Analysis-Plugin
+
+### tokenscope more detailed, useful to assess the fixed costs 
+https://github.com/awesome-opencode/awesome-opencode
+
 ## beads
 
 # TUIs

@@ -106,3 +106,6 @@ fpath=(~/.szh/completions $fpath)
 eval "$(fzf --zsh)"
 eval "$(zoxide init zsh)"
 
+
+# opencode
+export PATH=/home/sc/.opencode/bin:$PATH
