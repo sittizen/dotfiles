@@ -35,7 +35,11 @@ https://github.com/IgorWarzocha/Opencode-Context-Analysis-Plugin
 ### tokenscope more detailed, useful to assess the fixed costs 
 https://github.com/awesome-opencode/awesome-opencode
 
+### tokscale, monitor token consumption
+https://github.com/junhoyeo/tokscale
+
 ## beads
+https://github.com/steveyegge/beads
 
 # TUIs
 
@@ -51,10 +55,12 @@ https://github.com/awesome-opencode/awesome-opencode
 
 ## obsidian
 
-## mpv
+## mpv, cli media player
+https://mpv.io
 
 ## obs studio
 https://obsproject.com/
 
 ## kdenlive
+https://kdenlive.org/
 
