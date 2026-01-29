@@ -7,20 +7,12 @@ local function split_path(path)
 end
 
 local function join_path(parts, stop_at)
-	local joined = ""
-	for i = 1, stop_at do
-		joined = joined .. "/" .. parts[i]
-	end
-	return joined
+	return "/" .. table.concat(vim.list_slice(parts, 1, stop_at), "/")
 end
 
 local function contains_venv(path)
 	local full_path = path .. "/.venv"
-	local cmd = string.format('test -d "%s" && echo "yes" || echo "no"', full_path)
-	local handle = io.popen(cmd)
-	local result = handle:read("*l")
-	handle:close()
-	return result == "yes"
+	return vim.fn.isdirectory(full_path) == 1
 end
 
 local function find_venv(path)

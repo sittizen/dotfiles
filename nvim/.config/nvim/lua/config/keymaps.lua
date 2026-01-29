@@ -36,13 +36,13 @@ vim.keymap.set("n", "\\", ":cd %:h<CR>:e .<CR>", { desc = "Open oil in current b
 vim.keymap.set("n", "<C-u>", "g~iww", { desc = "Uppercase word under cursor" })
 
 -- LSP
-vim.api.nvim_set_keymap(
+vim.keymap.set(
 	"n",
 	"gD",
 	"<cmd>lua vim.lsp.buf.declaration()<CR>",
 	{ noremap = true, silent = true, desc = "Go to declaration" }
 )
-vim.api.nvim_set_keymap(
+vim.keymap.set(
 	"n",
 	"gd",
 	"<cmd>lua vim.lsp.buf.definition()<CR>",
