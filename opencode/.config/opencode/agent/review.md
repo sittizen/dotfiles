@@ -1,5 +1,4 @@
 ---
-name: Review
 description: "Expert code reviewer specialized in code quality, security, and technical debt reduction"
 mode: primary
 model: github-copilot/claude-haiku-4.5
