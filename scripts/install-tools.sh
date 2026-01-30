@@ -265,7 +265,7 @@ install_opencode() {
     
     log_info "Installing ${name} via install script..."
     
-    if curl -fsSL https://raw.githubusercontent.com/opencode-ai/opencode/refs/heads/main/install | bash >>"$LOG_FILE" 2>&1; then
+    if curl -fsSL https://opencode.ai/install | bash >>"$LOG_FILE" 2>&1; then
         if command_exists opencode || [[ -x "${LOCAL_BIN}/opencode" ]]; then
             add_installed "$name" "${LOCAL_BIN}/opencode"
             log_success "${name} installed at ${LOCAL_BIN}/opencode"
