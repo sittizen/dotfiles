@@ -71,6 +71,7 @@ alias tma="timew start"
 alias tmo="timew stop"
 alias tms="timew summary"
 alias oc="opencode ."
+alias rt="ralph-tui"
 
 export OPENCODE_EXPERIMENTAL_LSP_TOOL=true
 export EDITOR=nvim
@@ -109,3 +110,6 @@ eval "$(zoxide init zsh)"
 
 
 
+
+# opencode
+export PATH=/home/simone.cittadini@gruppomol.lcl/.opencode/bin:$PATH

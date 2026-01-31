@@ -53,7 +53,8 @@
       "**/.local/",
       "**/.ssh/",
       "**/.config/",
-      "**/.streamlit"
+      "**/.streamlit",
+      "**/sessions"
     ]
   }
 }
