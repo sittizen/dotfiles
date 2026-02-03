@@ -97,6 +97,10 @@ fi
   cd ..
 }
 
+...() {
+  cd .. && cd ..
+}
+
 # fuzzy finder
 eval "$(fzf --zsh)"
 eval "$(zoxide init zsh)"
