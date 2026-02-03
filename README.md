@@ -51,6 +51,9 @@ https://github.com/steveyegge/beads
 
 ## tw
 
+## tokscale
+https://github.com/junhoyeo/tokscale
+
 # GUIs
 
 ## obsidian
