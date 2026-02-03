@@ -15,5 +15,12 @@ return {
 			expr = true,
 			replace_keycodes = false,
 		})
+		vim.keymap.set({ "n", "x" }, "<leader>oc", function()
+			if vim.b.copilot_enabled then
+				vim.cmd("Copilot enable")
+			else
+				vim.cmd("Copilot disable")
+			end
+		end, { desc = "Toggle copilot" })
 	end,
 }

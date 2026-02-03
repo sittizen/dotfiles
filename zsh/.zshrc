@@ -24,6 +24,7 @@ zinit light Aloxaf/fzf-tab
 # Git completions (load before compinit)
 zinit ice wait lucid as"completion" blockf
 zinit snippet https://github.com/git/git/raw/master/contrib/completion/git-completion.zsh
+fpath=(~/.szh/completions $fpath)
 
 autoload -U compinit && compinit
 
@@ -92,24 +93,11 @@ else
   }
 fi
 
-v
-
 ..() {
   cd ..
 }
-
-# sesh 
-cs() {
-  sesh connect $(sesh list -t | fzf-tmux)
-}
-fpath=(~/.szh/completions $fpath)
 
 # fuzzy finder
 eval "$(fzf --zsh)"
 eval "$(zoxide init zsh)"
 
-
-
-
-# opencode
-export PATH=/home/simone.cittadini@gruppomol.lcl/.opencode/bin:$PATH
