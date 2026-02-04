@@ -4,7 +4,7 @@
   "autoupdate": true,
   "model": "github-copilot/claude-opus-4.5",
   "small_model": "github-copilot/claude-haiku-4.5",
-  //instructions: ["rules/*.md"], // todo
+  "instructions": ["rules/memory-bank.md"],
   "plugin": [
     "@plannotator/opencode@latest",
     "@ramtinj95/opencode-tokenscope"
