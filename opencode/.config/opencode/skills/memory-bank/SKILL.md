@@ -64,7 +64,7 @@ The Memory Bank consists of three core files, all in Markdown format.
 
 '''mermaid
 PB[projectbrief.md] --> SP[systemPatterns.md]
-SP[systemPatterns.md] --> TC[techContext.md]
+SP --> TC[techContext.md]
 '''
 
 ## Documentation Updates
