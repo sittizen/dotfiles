@@ -59,18 +59,6 @@ local temp_buf = function(body)
 	vim.bo[buf].filetype = "text"
 end
 
-vim.keymap.set("n", "<leader>it", function()
-	local scu = require("scutils")
-	local enclosing_test = scu.get_containing_function()
-	local parts = vim.split(vim.fn.expand("%:p"), "/", { plain = true })
-	local filepath = table.concat(parts, "/", 9)
-	local res = require("pysdk").to_pysdk("x_run_test_fun -p " .. filepath .. "::" .. enclosing_test)
-	local prompt = "Explain why this unit test is failing: \n" .. res
-	vim.schedule(function()
-		require("opencode").prompt(prompt)
-	end)
-end, { desc = "Launch test under cursor and ask opencode why it's failing" })
-
 vim.keymap.set("n", "<leader>il", function()
 	local filepath = vim.fn.expand("%:p")
 	local parts = vim.split(filepath, "/", { plain = true })

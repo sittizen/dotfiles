@@ -62,10 +62,10 @@ The Memory Bank consists of three core files, all in Markdown format.
 
  Files build upon each other in a clear hierarchy:
 
-'''mermaid
+```mermaid
 PB[projectbrief.md] --> SP[systemPatterns.md]
 SP --> TC[techContext.md]
-'''
+```
 
 ## Documentation Updates
 
@@ -76,7 +76,7 @@ Memory Bank updates occur when:
 3. When user requests with **update memory bank** (MUST review ALL files)
 4. When context needs clarification
 
-'''mermaid
+```mermaid
 Start[Update Process]
 
     subgraph Process
@@ -89,7 +89,7 @@ Start[Update Process]
     end
 
     Start --> Process
-'''
+```
 
 Note: When triggered by **memory-bank**, I MUST review every memory bank file, even if some don't require updates.
 
