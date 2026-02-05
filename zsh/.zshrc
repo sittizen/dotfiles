@@ -74,6 +74,7 @@ alias tms="timew summary"
 alias oc="opencode ."
 alias rt="ralph-tui"
 
+export CHROME_DEVEL_SANDBOX=/usr/local/sbin/chrome_sandbox
 export OPENCODE_EXPERIMENTAL_LSP_TOOL=true
 export EDITOR=nvim
 
