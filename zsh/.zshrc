@@ -93,6 +93,13 @@ else
   }
 fi
 
+
+gms() {
+  PYPI_VALS=(`vault read -format json kv/prd/gitlab | jq -r '.data.pypi_install_user, .data.pypi_install_secret'`)
+  export UV_INDEX_PYPIMOL_GITLAB_USERNAME=${PYPI_VALS[1]}
+  export UV_INDEX_PYPIMOL_GITLAB_PASSWORD=${PYPI_VALS[2]}
+}
+
 ..() {
   cd ..
 }
@@ -105,3 +112,6 @@ fi
 eval "$(fzf --zsh)"
 eval "$(zoxide init zsh)"
 
+
+# opencode
+export PATH=/home/simone.cittadini@gruppomol.lcl/.opencode/bin:$PATH
