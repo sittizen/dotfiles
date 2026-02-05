@@ -2,7 +2,7 @@
 description: "Expert in documentation, API docs, and technical communication"
 mode: primary
 model: github-copilot/gpt-5.2
-temperature: 0.1
+color: success
 
 tool:
   bash: false
