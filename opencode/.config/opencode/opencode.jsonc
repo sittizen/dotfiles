@@ -4,14 +4,19 @@
   "autoupdate": true,
   "model": "github-copilot/claude-opus-4.5",
   "small_model": "github-copilot/claude-haiku-4.5",
-  "instructions": ["rules/memory-bank.md"],
+  "agent": {
+    "plan": {
+      "color": "info"
+    }
+  },
+  //"instructions": ["rules/.md"],
   "plugin": [
     "@plannotator/opencode@latest",
     "@ramtinj95/opencode-tokenscope"
   ],
   "share": "disabled",
   "tools": {
-    "webfetch": false
+    // "webfetch": false
   },
   "mcp": {
   "context7": {
