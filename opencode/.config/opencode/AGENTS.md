@@ -13,4 +13,4 @@ Instructions:
 Search for a file in relative path: @docs/memory-bank/systemPatterns.md
 
 ## Building Guidelines
-Search for a file in relative path: @docs/memeory-bank/techContext.md
+Search for a file in relative path: @docs/memory-bank/techContext.md
