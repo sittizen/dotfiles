@@ -79,26 +79,30 @@ export OPENCODE_EXPERIMENTAL_LSP_TOOL=true
 export EDITOR=nvim
 
 # vault
-if [[ "$(hostname)" == "leona" ]]; then
-  export VAULT_ADDR=https://127.0.0.1:8200
-  export VAULT_SKIP_VERIFY=true
-  v() { 
+v() {
+  if [[ "$(hostname)" == "leona" ]]; then
+    export VAULT_ADDR=https://127.0.0.1:8200
+    export VAULT_SKIP_VERIFY=true
     export VAULT_TOKEN=$(sed -n '2p' ~/workspace/.uk)
-    export CONTEXT7_API_KEY=$(vault kv get -format=json kv/leona/zsh 2>/dev/null | jq -r .data.data.ctx7)
-  }
-else
-  export VAULT_ADDR=https://vault.pycc.gmolapps.lcl
-  v() { 
+  else
+    export VAULT_ADDR=https://vault.pycc.gmolapps.lcl
     export VAULT_TOKEN=$(vault login -method=oidc -token-only 2>/dev/null)
-    export CONTEXT7_API_KEY=$(vault read -format=json kv/loc/simone.cittadini/zsh 2>/dev/null | jq -r .data.ctx7)
-  }
-fi
+  fi
+}
 
 
 gms() {
-  PYPI_VALS=(`vault read -format json kv/prd/gitlab | jq -r '.data.pypi_install_user, .data.pypi_install_secret'`)
-  export UV_INDEX_PYPIMOL_GITLAB_USERNAME=${PYPI_VALS[1]}
-  export UV_INDEX_PYPIMOL_GITLAB_PASSWORD=${PYPI_VALS[2]}
+  if [[ "$(hostname)" == "leona" ]]; then
+    export CONTEXT7_API_KEY=$(vault kv get -format=json kv/leona/zsh 2>/dev/null | jq -r .data.data.ctx7)
+  else
+    PYPI_VALS=(`vault read -format json kv/prd/gitlab | jq -r '.data.pypi_install_user, .data.pypi_install_secret'`)
+    export UV_INDEX_PYPIMOL_GITLAB_USERNAME=${PYPI_VALS[1]}
+    export UV_INDEX_PYPIMOL_GITLAB_PASSWORD=${PYPI_VALS[2]}
+    export CONTEXT7_API_KEY=$(vault read -format=json kv/loc/simone.cittadini/zsh 2>/dev/null | jq -r .data.ctx7)
+    export GITLAB_TOKEN=$(vault read -format=json kv/loc/simone.cittadini/zsh 2>/dev/null | jq -r .data.glam)
+    export GITLAB_URL=https://gitlab.gruppomol.lcl/
+    export GITLAB_PROJECTS=231,239
+  fi
 }
 
 ..() {
@@ -107,6 +111,10 @@ gms() {
 
 ...() {
   cd .. && cd ..
+}
+
+....() {
+  cd .. && cd .. && cd ..
 }
 
 # fuzzy finder
