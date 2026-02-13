@@ -2,7 +2,6 @@ return {
 	"github/copilot.vim",
 	enabled = true,
 	config = function()
-		vim.notify("Configuring copilot")
 		vim.b.copilot_enabled = true
 		vim.g.copilot_filetypes = {
 			["*"] = false,
