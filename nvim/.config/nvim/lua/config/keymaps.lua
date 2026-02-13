@@ -59,10 +59,13 @@ local temp_buf = function(body)
 	vim.bo[buf].filetype = "text"
 end
 
-vim.keymap.set("n", "<leader>ic", function()
+vim.keymap.set("n", "<leader>ic", require("Comment.api").toggle.linewise.current, { desc = "Toggle line comment" })
+
+vim.keymap.set("n", "<leader>id", function()
 	local dir = vim.fn.expand("%:p:h")
 	require("oil").open(dir)
 end, { desc = "Open oil in the current file directory" })
+
 vim.keymap.set("n", "<leader>il", function()
 	local filepath = vim.fn.expand("%:p")
 	local parts = vim.split(filepath, "/", { plain = true })

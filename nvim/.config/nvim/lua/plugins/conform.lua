@@ -6,6 +6,7 @@ return {
 			formatters_by_ft = {
 				lua = { "stylua" },
 				python = { "ruff_format" },
+				go = { "gofmt" },
 			},
 		})
 		require("conform").formatters.ruff = {

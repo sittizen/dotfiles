@@ -13,7 +13,7 @@ return {
 				---Line-comment toggle keymap
 				line = "gcc",
 				---Block-comment toggle keymap
-				block = "gbc",
+				block = "gcb",
 			},
 			---LHS of operator-pending mappings in NORMAL and VISUAL mode
 			opleader = {
@@ -34,10 +34,9 @@ return {
 			---Enable keybindings
 			---NOTE: If given `false` then the plugin won't create any mappings
 			mappings = {
-				---Operator-pending mapping; `gcc` `gbc` `gc[count]{motion}` `gb[count]{motion}`
-				basic = true,
+				basic = false,
 				---Extra mapping; `gco`, `gcO`, `gcA`
-				extra = true,
+				extra = false,
 			},
 			---Function to call before (un)comment
 			pre_hook = nil,
