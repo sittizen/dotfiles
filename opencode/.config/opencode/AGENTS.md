@@ -11,6 +11,3 @@ Instructions:
 
 ## Planning Guidelines
 Before doing any plan load this file relative to project root: @docs/systemPatterns.md
-
-## Building Guidelines
-Before writing the implementation code load this file relative to project root: @docs/techContext.md
