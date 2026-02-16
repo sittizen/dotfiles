@@ -78,14 +78,18 @@ export CHROME_DEVEL_SANDBOX=/usr/local/sbin/chrome_sandbox
 export OPENCODE_EXPERIMENTAL_LSP_TOOL=true
 export EDITOR=nvim
 
+if [[ "$(hostname)" == "leona" ]]; then
+    export VAULT_ADDR=https://127.0.0.1:8200
+    export VAULT_SKIP_VERIFY=true
+else
+    export VAULT_ADDR=https://vault.pycc.gmolapps.lcl
+fi
+
 # vault
 v() {
   if [[ "$(hostname)" == "leona" ]]; then
-    export VAULT_ADDR=https://127.0.0.1:8200
-    export VAULT_SKIP_VERIFY=true
     export VAULT_TOKEN=$(sed -n '2p' ~/workspace/.uk)
   else
-    export VAULT_ADDR=https://vault.pycc.gmolapps.lcl
     export VAULT_TOKEN=$(vault login -method=oidc -token-only 2>/dev/null)
   fi
 }
