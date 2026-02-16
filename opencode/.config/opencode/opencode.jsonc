@@ -9,7 +9,7 @@
       "color": "info"
     }
   },
-  //"instructions": ["rules/.md"],
+  // "instructions": [""],
   "plugin": [
     "@plannotator/opencode@latest",
     "@ramtinj95/opencode-tokenscope"
