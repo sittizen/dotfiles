@@ -16,16 +16,21 @@ You are tasked with writing a list of unit test specifications for the code unde
 ## TestPlan workflow
 1. Read the code under scrutiny, find wich code in the rest of the project uses it.
 2. Use gathered information about the code under scrutiny to come up with a suite of tests
-3. use bash to invoke "gm x_test_plan_path $1 $2", it returns the TestPlan markdown file where you will write the plan
+3. use bash to invoke "gm x_test_plan_path $1 $2", it returns the TestPlan markdown file, where you will write the plan
 ```bash
 gm src/tenancy/project/file_name.py class MyClass 
 # expected output:
 tests/tenancy/project/file_name/TestPlan_my_class.md
 ```
 3. Write the list of tests into the TestsPlan file following this template:
-- start with an header detailing the code object $2 under scrutiny, followed by a short description of the understood function and what will be stressed:
-    - # TestPlan for "class MyClass"
-    - Description of MyClass function inside the code and aim of the tests... 
+- start with an header detailing the code object $2 from file $1 under scrutiny, followed by a short description of the understood function and what will be stressed:
+    - # TestPlan for "$2" @ "$1"
+    - Description of $2 function inside the code and aim of the tests... 
+
+- add paths of files where the code object under scrutiny is used:
+    - ## used in:
+    - list of paths where the code object is used
+
 - include for each test in your plan an entry like:
     - ## TST-001: small descriptive title
     - - [ ] Status: TODO  
@@ -35,8 +40,12 @@ tests/tenancy/project/file_name/TestPlan_my_class.md
 
 EXAMPLE :
 ```TestsPlan.md
-# TestPlan for "def create_user"
+# TestPlan for "def create_user" @ src/auth/users.py
 Creates a user into the database, after validation of the passed personal data. Test invalid data and database errors leave the system in a coherent state.
+
+## used in:
+    - src/api/auth.py
+    - src/api/batches.py
 
 ## TST-001: happy path
 - [ ] Status: TODO
