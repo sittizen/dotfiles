@@ -18,9 +18,9 @@ You are tasked with writing a list of unit test specifications for the code unde
 2. Use gathered information about the code under scrutiny to come up with a suite of tests
 3. use bash to invoke "gm x_test_plan_path $1 $2", it returns the TestPlan markdown file, where you will write the plan
 ```bash
-gm src/tenancy/project/file_name.py class MyClass 
-# expected output:
-tests/tenancy/project/file_name/TestPlan_my_class.md
+gm x_test_plan_path src/project/file_name.py class MyClass 
+# expected output, path of the plan file:
+tests/project/file_name/TestPlan_my_class.md
 ```
 3. Write the list of tests into the TestsPlan file following this template:
 - start with an header detailing the code object $2 from file $1 under scrutiny, followed by a short description of the understood function and what will be stressed:
