@@ -11,6 +11,7 @@
   },
   // "instructions": [""],
   "plugin": [
+    "opencode-mystatus",
     "@plannotator/opencode@latest",
     "@ramtinj95/opencode-tokenscope"
   ],
