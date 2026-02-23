@@ -1,7 +1,7 @@
 ---
 description: Create a TestPlan file describing a complete suite of unit tests for a class or function
 agent: build
-model: opencode/kimi-k2.5-free
+model: github-copilot/gpt-5-mini
 ---
 
 Look for a function or class named $2 in the file $1

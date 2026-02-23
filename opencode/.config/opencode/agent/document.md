@@ -1,7 +1,7 @@
 ---
 description: "Expert in documentation, API docs, and technical communication"
 mode: primary
-model: github-copilot/gpt-5.2
+model: github-copilot/gpt-5-mini
 color: success
 
 tool:
