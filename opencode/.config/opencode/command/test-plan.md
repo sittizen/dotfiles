@@ -5,12 +5,12 @@ model: github-copilot/gpt-5-mini
 ---
 
 Look for a function or class named $2 in the file $1
-You are tasked with writing a list of unit test specifications for the code under scrutiny; strive in finding ways in which the code can be broken.
+You are tasked with writing a list of unit test specifications for the code under scrutiny; strive in finding ways in which the code breaks in unmanaged ways.
 
 ## Assumptions
 - **NEVER** change the code under test, **NEVER** write actual tests.
 - Class or function under scrutiny is part of a whole, check the surrounding code to understand where it is called, what input is to be expected, and what output is to be produced.
-- Do not write more than 7 tests, make just one test with the "happy path" and have the others covering the more unexpected paths and inputs.
+- Do not write more than 7 tests, make just one test with the "happy path" and have the others covering unexpected and fringe inputs and paths.
 - **have no interest in expected inputs and simple paths**, it's ok to suppose the code does not contain trivial bugs.
 
 ## TestPlan workflow
