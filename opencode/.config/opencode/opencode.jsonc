@@ -4,6 +4,18 @@
   "autoupdate": true,
   "model": "github-copilot/claude-opus-4.5",
   "small_model": "github-copilot/claude-haiku-4.5",
+  "provider":{
+  "leollama": {
+    "npm": "@ai-sdk/openai-compatible",
+    "name": "LeOllama",
+    "options": {
+      "baseURL": "http://192.168.1.24:11434/v1"
+    },
+    "models": {
+     "qwen3:8b": {"name": "qwen3:8b"} 
+    }
+  }
+  },
   "agent": {
     "plan": {
       "color": "info"

@@ -11,3 +11,6 @@ Instructions:
 
 ## Planning Guidelines
 Before doing any plan load this file relative to project root: @docs/systemPatterns.md
+
+## Agent Feedback
+When you encounter something in the project that surprises / confuses you, give feedback to the user working with you, and indicate the case updating the file @docs/encounteredProblems.md, to help prevent future agents from having the same issue.
