@@ -20,7 +20,10 @@
       "color": "info"
     }
   },
-  // "instructions": [""],
+  "instructions": [
+    "https://httpd.pycc.gmolapps.lcl/AGENTS_root.md",
+    "https://httpd.pycc.gmolapps.lcl/AGENTS_pycc.md"
+  ],
   "plugin": [
     "opencode-mystatus",
     "@plannotator/opencode@latest",
