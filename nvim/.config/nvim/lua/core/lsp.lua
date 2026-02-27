@@ -29,8 +29,7 @@ vim.diagnostic.config({
 	},
 })
 
--- vim.lsp.set_log_level("error")
-vim.lsp.set_log_level("warn")
+vim.lsp.log.set_level("error")
 
 local isLspDiagnosticsVisible = true
 vim.keymap.set("n", "<leader>lx", function()
