@@ -60,8 +60,7 @@ bindsym $mod+t layout tabbed
 bindsym $mod+e layout toggle split
 
 # WORKSPACES
-workspace 1 output HDMI-A-0
-workspace 2 output HDMI-A-0
+exec --no-startup-id ~/.config/i3/monitor-setup.sh
 set $ws1 "1"
 set $ws2 "2"
 # seems this is enough to switch workspaces, strange
