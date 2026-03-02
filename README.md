@@ -1,3 +1,16 @@
+# Core
+
+Opinionated, any terminal emulator and shell are good as long as they are performant ( at least a couple of tmux sessions with 3/4 panes in each are to be expected, lot of writing in shell and TUIs )
+
+## ghostty
+https://ghostty.org
+
+## zsh
+https://www.zsh.org
+
+## tmux
+https://github.com/tmux
+
 # Shell Tools
 
 Faster options of legacy commands (ls, grep, find) and micro clients to frequently used services (copilot, gitlab).
@@ -54,10 +67,10 @@ https://github.com/steveyegge/beads
 
 Following tools permit to quickly take a look at the state of the code / system while developing, they can be opened in a tmux popup via shorcut while / after the coding agent is planning / building
 
-## lazygit , simple terminal UI for git commands
+## lazygit , simple terminal UI for git
 https://github.com/jesseduffield/lazygit
 
-## lazydocker , simple terminal UI for docker commands
+## lazydocker , simple terminal UI for docker
 https://github.com/jesseduffield/lazydocker
 
 ## btop , resource monitor
