@@ -1,7 +1,7 @@
 ---
 description: "Generate or update main documentation files."
 agent: build
-model: github-copilot/claude-opus-4.6
+model: github-copilot/claude-opus-4.5
 ---
 
 # Opencode's Memory Bank
