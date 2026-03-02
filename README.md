@@ -1,6 +1,6 @@
 # Shell Tools
 
-Faster options of legacy commands (ls, grep, find) and micro client to frequently used services (copilot, gitlab).
+Faster options of legacy commands (ls, grep, find) and micro clients to frequently used services (copilot, gitlab).
 Mainly used by coding agents to look into the code, also faster for the user than graphical interfaces, everything happens in the same terminal window.
 
 ## bat , cat clone with syntax highlight
