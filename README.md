@@ -3,67 +3,80 @@
 ## bat , cat clone with syntax highlight
 https://github.com/sharkdp/bat
 
-## fd , find entries in your filesystem
+## fd , fast alternative to find
 https://github.com/sharkdp/fd?tab=readme-ov-file#installation
 
-## fzf
+## fzf , general purpose fuzzy finder
 https://github.com/junegunn/fzf
 
-## zoxide
+## zoxide , cd command with memory
+https://github.com/ajeetdsouza/zoxide
 
-## ripgrep
+## ripgrep , recursive search tool
+https://BurntSushi/ripgrep
 
-## exa
+## eza , better ls
+https://github.com/eza-community/eza
 
-## sesh
+## sesh , tmux session manager
 https://github.com/joshmedeski/sesh
 
-## gh cli
+## gh , github cli for quick questions to copilot from shell
 https://github.com/cli/cli/blob/trunk/docs/install_linux.md
+
+## glam , gitlab cli
+https://github.com/gitlab-org/cli
 
 # dev tools
 
-## opencode
+## opencode , open source AI coding agent
+https://opencode.ai
 
-### plannotator
+### opencode plugins / tools
 
-### context7
+#### plannotator ,  interactive plan review and save as html pages
+https://plannotator.ai
 
-### context analysis, fast useful during session
+#### context7 , latest docs via mcp
+https://context7.com
+
+#### context analysis, fast , useful during session
 https://github.com/IgorWarzocha/Opencode-Context-Analysis-Plugin
 
-### tokenscope more detailed, useful to assess the fixed costs 
+#### tokenscope , more detailed, useful to assess the fixed costs 
 https://github.com/awesome-opencode/awesome-opencode
 
-### tokscale, monitor token consumption
-https://github.com/junhoyeo/tokscale
-
-## beads
+#### beads , graph issue tracker for AI agents
 https://github.com/steveyegge/beads
 
 # TUIs
 
-## lazygit
+## lazygit , simple terminal UI for git commands
+https://github.com/jesseduffield/lazygit
 
-## lazydocker
+## lazydocker , simple terminal UI for docker commands
+https://github.com/jesseduffield/lazydocker
 
-## btop
+## btop , resource monitor
+https://github.com/arisotcratos/btop
 
-## tw
+## tabview , lightweight application to view and query tabular data
+https://github.com/shshemi/tabview
 
-## tokscale
+## tokscale, general report on token consumption
 https://github.com/junhoyeo/tokscale
 
 # GUIs
 
-## obsidian
+## obsidian , note taking
+https://obsidian.md
 
 ## mpv, cli media player
 https://mpv.io
 
-## obs studio
+## obs studio , video recording
 https://obsproject.com/
 
-## kdenlive
+## kdenlive , video editing
 https://kdenlive.org/
 
