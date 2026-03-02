@@ -1,5 +1,8 @@
 # Shell Tools
 
+Faster options of legacy commands (ls, grep, find) and micro client to frequently used services (copilot, gitlab).
+Mainly used by coding agents to look into the code, also faster for the user than graphical interfaces, everything happens in the same terminal window.
+
 ## bat , cat clone with syntax highlight
 https://github.com/sharkdp/bat
 
@@ -27,7 +30,7 @@ https://github.com/cli/cli/blob/trunk/docs/install_linux.md
 ## glam , gitlab cli
 https://github.com/gitlab-org/cli
 
-# dev tools
+# TUIs
 
 ## opencode , open source AI coding agent
 https://opencode.ai
@@ -49,7 +52,7 @@ https://github.com/awesome-opencode/awesome-opencode
 #### beads , graph issue tracker for AI agents
 https://github.com/steveyegge/beads
 
-# TUIs
+Following tools permit to quickly take a look at the state of the code / system while developing, they can be opened in a tmux popup via shorcut while / after the coding agent is planning / building
 
 ## lazygit , simple terminal UI for git commands
 https://github.com/jesseduffield/lazygit
