@@ -58,6 +58,7 @@ zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 alias l='exa -1 -l --classify --icons --color-scale --group-directories-first --no-permissions --no-user --no-time'
 alias lt='exa -1 -l --classify --icons --color-scale --tree --no-permissions --no-user'
 alias la='exa -1 -l --classify --icons --color-scale --all'
+alias lta='exa -1 -l --classify --icons --color-scale --all --tree --no-permissions --no-user'
 alias cat="batcat -p"
 alias vim='nvim'
 alias vi='nvim'
