@@ -79,7 +79,7 @@ export OPENCODE_EXPERIMENTAL_LSP_TOOL=true
 export EDITOR=nvim
 
 if [[ "$(hostname)" == "leona" ]]; then
-    export VAULT_ADDR=https://127.0.0.1:8200
+    export VAULT_ADDR=http://127.0.0.1:8200
     export VAULT_SKIP_VERIFY=true
 else
     export VAULT_ADDR=https://vault.pycc.gmolapps.lcl
@@ -88,7 +88,7 @@ fi
 # vault
 v() {
   if [[ "$(hostname)" == "leona" ]]; then
-    export VAULT_TOKEN=$(sed -n '2p' ~/workspace/.uk)
+    export VAULT_TOKEN=$(cat ~/workspace/.uk)
   else
     export VAULT_TOKEN=$(vault login -method=oidc -token-only 2>/dev/null)
   fi
@@ -128,3 +128,6 @@ eval "$(zoxide init zsh)"
 
 # opencode
 export PATH=/home/simone.cittadini@gruppomol.lcl/.opencode/bin:$PATH
+
+# opencode
+export PATH=/home/sc/.opencode/bin:$PATH
