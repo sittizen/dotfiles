@@ -1,7 +1,6 @@
 ---
 description: Implement a unit test choosen from a todo list in a TestPlan file.
 agent: build
-model: github-copilot/gpt-5.1-codex-mini
 ---
 
 You are tasked with writing a unit test implementation for a specific case, trying to find potential bugs.
