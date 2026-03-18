@@ -32,7 +32,7 @@ vim.diagnostic.config({
 vim.lsp.log.set_level("error")
 
 local isLspDiagnosticsVisible = true
-vim.keymap.set("n", "<leader>lx", function()
+vim.keymap.set("n", "<leader>ix", function()
 	isLspDiagnosticsVisible = not isLspDiagnosticsVisible
 	vim.diagnostic.config({ virtual_lines = isLspDiagnosticsVisible })
 end, { desc = "toggle visual hints" })
