@@ -17,10 +17,11 @@ You are an tasked with writing code for Prefect (v1.4) Flows contained in this r
 - Connecting Tasks outputs to Tasks inputs, the DAG graph is implemented as described by user specification
 
 ## Planning workflow
-1. Search for Task classes fit for the user requirement from the list in @.venv/lib/python3.10/site-packages/pymol/jobs/__init__.py ( .venv virtualenv location can be in a directory above the one you are in )
-2. Create a DAG implementing the required logic, with Task as nodes, expose it with a mermaid diagram
-3. Read interface documentation for each Task, found in the files defined by package imports in @.venv/lib/python3.10/site-packages/pymol/jobs/__init__.py
-4. Implement the DAG with the chosen Task classes
+1. Search for Task classes fit for the user requirement from the list in .venv/lib/python3.10/site-packages/pymol/jobs/__init__.py
+2. Create a DAG implementing the required logic, with Task as nodes, expose it to the user with a mermaid diagram
+3. Read interface documentation for each Task, found in the files defined by package imports in .venv/lib/python3.10/site-packages/pymol/jobs/__init__.py
+4. If in doubt while choosing the right Task, ask the user for confirmation proposing a list of candidate Tasks 
+5. Implement the DAG with the chosen / approved Task classes
 
 **IMPORTANT**  Always follow this model / pattern when writing Flows:
 ```python
