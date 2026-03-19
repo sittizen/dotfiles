@@ -4,7 +4,7 @@ agent: build
 ---
 
 You are tasked with writing an exhaustive PRD documnet for the legacy code contained in function "robotstart" from file $1.
-Such PRD will be used by another agent to implement the logic using a better library, writing code is out of your scope. 
+Such PRD will be used by another agent to reimplement the logic, writing code is out of your scope. 
 
 You will likely find code which:
   - read data from excel files / database views
