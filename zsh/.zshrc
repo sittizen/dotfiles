@@ -1,4 +1,3 @@
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
@@ -8,19 +7,17 @@ fi
 ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
 
 if [ ! -d "$ZINIT_HOME" ]; then
-    mkdir -p "$(dirname $ZINIT_HOME)"
-    git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
+  echo "cloning zinit"
+  mkdir -p "$(dirname $ZINIT_HOME)"
+  git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
 fi
-
 source "${ZINIT_HOME}/zinit.zsh"
 
 zinit ice depth=1; zinit light romkatv/powerlevel10k
-
 zinit light zsh-users/zsh-syntax-highlighting
 zinit light zsh-users/zsh-completions
 zinit light zsh-users/zsh-autosuggestions
 zinit light Aloxaf/fzf-tab
-
 # Git completions (load before compinit)
 zinit ice wait lucid as"completion" blockf
 zinit snippet https://github.com/git/git/raw/master/contrib/completion/git-completion.zsh
@@ -33,7 +30,7 @@ autoload -U compinit && compinit
 
 bindkey -v
 
-HISTSIZE=2000
+HISTSIZE=600
 HISTFILE=~/.zsh_history
 SAVEHIST=$HISTSIZE
 HISTDUP=erase
@@ -55,6 +52,21 @@ zstyle ':fzf-tab:*' switch-group '<' '>'
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
 zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 
+# env vals
+export SHELL=/bin/zsh
+export EDITOR=nvim
+export OPENCODE_EXPERIMENTAL_LSP_TOOL=true
+export CHROME_DEVEL_SANDBOX=/usr/local/sbin/chrome_sandbox
+
+if [[ "$(hostname)" == "leona" ]]; then
+    export VAULT_ADDR=http://127.0.0.1:8200
+    export VAULT_SKIP_VERIFY=true
+else
+    export VAULT_ADDR=https://vault.pycc.gmolapps.lcl
+fi
+
+# aliases
+alias tm='tmux'
 alias l='exa -1 -l --classify --icons --color-scale --group-directories-first --no-permissions --no-user --no-time'
 alias lt='exa -1 -l --classify --icons --color-scale --tree --no-permissions --no-user'
 alias la='exa -1 -l --classify --icons --color-scale --all'
@@ -72,21 +84,10 @@ alias git-prune="git branch --merged | egrep -v '(^\*|master|dev|production|test
 alias tma="timew start"
 alias tmo="timew stop"
 alias tms="timew summary"
-alias oc="opencode ."
+alias oc="opencode"
 alias rt="ralph-tui"
 
-export CHROME_DEVEL_SANDBOX=/usr/local/sbin/chrome_sandbox
-export OPENCODE_EXPERIMENTAL_LSP_TOOL=true
-export EDITOR=nvim
-
-if [[ "$(hostname)" == "leona" ]]; then
-    export VAULT_ADDR=http://127.0.0.1:8200
-    export VAULT_SKIP_VERIFY=true
-else
-    export VAULT_ADDR=https://vault.pycc.gmolapps.lcl
-fi
-
-# vault
+# functions
 v() {
   if [[ "$(hostname)" == "leona" ]]; then
     export VAULT_TOKEN=$(cat ~/workspace/.uk)
@@ -94,7 +95,6 @@ v() {
     export VAULT_TOKEN=$(vault login -method=oidc -token-only 2>/dev/null)
   fi
 }
-
 
 gms() {
   if [[ "$(hostname)" == "leona" ]]; then
@@ -104,6 +104,7 @@ gms() {
     export UV_INDEX_PYPIMOL_GITLAB_USERNAME=${PYPI_VALS[1]}
     export UV_INDEX_PYPIMOL_GITLAB_PASSWORD=${PYPI_VALS[2]}
     export CONTEXT7_API_KEY=$(vault read -format=json kv/loc/simone.cittadini/zsh 2>/dev/null | jq -r .data.ctx7)
+    export GOOGLE_TRANSLATE_API_KEY=$(vault read -format=json kv/loc/simone.cittadini/zsh 2>/dev/null | jq -r .data.gtranslate)
     export GITLAB_TOKEN=$(vault read -format=json kv/loc/simone.cittadini/zsh 2>/dev/null | jq -r .data.glam)
     export GITLAB_URL=https://gitlab.gruppomol.lcl/
     export GITLAB_PROJECTS=231,239
@@ -126,9 +127,3 @@ gms() {
 eval "$(fzf --zsh)"
 eval "$(zoxide init zsh)"
 
-
-# opencode
-export PATH=/home/simone.cittadini@gruppomol.lcl/.opencode/bin:$PATH
-
-# opencode
-export PATH=/home/sc/.opencode/bin:$PATH
