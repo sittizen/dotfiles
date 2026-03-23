@@ -27,7 +27,7 @@
   "plugin": [
     "opencode-mystatus",
     "@ramtinj95/opencode-tokenscope",
-    "@plannotator/opencode@latest"
+    "opencode-mermaid-renderer@0.0.3"
   ],
   "share": "disabled",
   "tools": {
