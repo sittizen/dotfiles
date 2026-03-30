@@ -11,7 +11,7 @@
       "baseURL": "http://192.168.1.24:11434/v1"
     },
     "models": {
-     "qwen3:8b": {"name": "qwen3:8b"} 
+     "qwen3:8b": {"name": "qwen3:8b"}
     }
   }
   },
@@ -21,8 +21,8 @@
     }
   },
   "instructions": [
-    "https://httpd.pycc.gmolapps.lcl/instructions/AGENTS_root.md",
-    "https://httpd.pycc.gmolapps.lcl/instructions/AGENTS_pycc.md"
+//    "https://httpd.pycc.gmolapps.lcl/instructions/AGENTS_root.md",
+//    "https://httpd.pycc.gmolapps.lcl/instructions/AGENTS_pycc.md"
   ],
   "plugin": [
     "opencode-mystatus",

@@ -1,28 +1,25 @@
 ---
 description: "Generate or update main documentation files."
 agent: build
-model: github-copilot/claude-opus-4.5
+model: github-copilot/gpt-5.3-codex
 ---
 
-# Opencode's Memory Bank
+**IMPORTANT**
+As an LLM Agent every new session your knowledge of the project completely resets.
+The Documentation is the only link to previous work. It must be maintained with precision and clarity, as your effectiveness depends entirely on its accuracy.
 
-Opencode memory resets completely between sessions, it is mandatory to maintain perfect documentation.
+## Documentation Structure 
 
-## Storage Location
+The Main Documentation consists of two core files, in Markdown format.
 
-**CRITICAL**: All Memory Bank files MUST be stored in `docs/`
 This directory structure is non-negotiable:
-
 ```
 docs/
 ├── projectBrief.md
 └── systemPatterns.md
 ```
-## Memory Bank Structure
-The Memory Bank consists of three core files, all in Markdown format.
-When an inline graph is needed, use the mermaid standard.
 
-### Core Files (Required)
+## Core Files
 
 1. `projectBrief.md` is:
    - Foundation document
@@ -30,9 +27,26 @@ When an inline graph is needed, use the mermaid standard.
    - Problems the project solves
    - User experience goals
    - Source of truth for project scope
-   `projectBrief.md` is not:
-   - Technical document, detail only the business logic and requisites
-   - Contains info about the why, not the how
+   `projectBrief.md` is not about:
+   - Technicalities, detail only the business logic and requisites
+   - Implementations, contains only info about the why, not the how
+
+   EXAMPLE STRUCTURE:
+   ```projectBrief.md
+   # Project Brief @ [current git commit hash]
+
+   # Description:
+   [ brief "elevator pitch" description of the project ]
+
+   # Business Domains
+   [ detailed descriptions about the business domains involved ]
+
+   # Problems Solved
+   [ detailed descriptions of the problems the project aims to solve inside the business domains ]
+
+   # Domain glossary
+   [ spefic domain glossary of elements found in the code ]
+   ```
 
 2. `systemPatterns.md` is:
    - System architecture
@@ -40,33 +54,46 @@ When an inline graph is needed, use the mermaid standard.
    - Design patterns in use
    - Component relationships
    - Critical implementation paths
-   `systemPatterns.md` is not:
-   - Business document, detail only the code architecture choices
-   - Contains info about the how, not the why
+   `systemPatterns.md` is not about:
+   - Business, detail only the code architecture choices
+   - Motivations, contains info about the how, not the why
    - Does not explain the tooling, only the technical choices 
 
+   EXAMPLE STRUCTURE:
+   ```systemPatterns.md
+   # System Patterns @ [current git commit hash]
 
- Files build upon each other in a clear hierarchy:
+   # Source Structure
+   [ representation of the directory structure with brief description of the contained logics / components ]
+
+   # Software Architecture Diagram
+   [ mermaid diagram detailing the relationships between identified components ]
+
+   # Domain Models Diagram
+   [ mermaid diagram detailing ORM / Pydantic objects and their relationships ]
+
+   # Key Design Patterns
+   [ list of the identified design patterns (only if non trivial) followed in the code, describe in detail each point ]
+   ```
+
+
+## When invoked follow this workflow :
 
 ```mermaid
-flowchart LR
-   PB[projectbrief.md] --> SP[systemPatterns.md]
-   SP --> TC[techContext.md]
+flowchart TD
+    S[Look for the files] -->C{Do the file exists ?}
+    C --> |no| INIT[Read the code and create the files]
+    C -->|yes| UPDATE[Read the diff and update the files]
 ```
 
-## Documentation Updates
+### INIT workflow:
+1.1. study the existing code with the aim to extrapolate info relevant to the projectBrief document
+1.2. write the projectBrief.md document, following exactly the example structure
+2. compact the session, informations about business goals can be forgotten
+3.1. study again the existing code, now the aim is to extrapolate info relevant to the systemPatterns document
+3.2. write the systemPatterns.md document, following exactly the example structure
 
-```mermaid
-flowchart LR
 
-  P1[Review ALL Files]
-  P2[Document Current State]
-  P3[Clarify Next Steps]
-  P4[Document Insights & Patterns]
-
-  P1 --> P2 --> P3 --> P4
-```
-
-When triggered I MUST review every memory bank file, even if some don't require updates.
-
-REMEMBER: After every memory reset, I begin completely fresh. The Memory Bank is my only link to previous work. It must be maintained with precision and clarity, as my effectiveness depends entirely on its accuracy.
+**NOTES**
+- When an inline graph is needed, use the mermaid standard.
+- This is a highly interactive session, ask the user whenever you feel it is necessary
