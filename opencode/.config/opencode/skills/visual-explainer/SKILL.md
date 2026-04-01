@@ -1,6 +1,6 @@
 ---
 name: visual-explainer
-description: "Generate beautiful, self-contained HTML pages that visually explain systems, code changes, plans, and data. Use when the user asks for a diagram, architecture overview, diff review, plan review, project recap, comparison table, or any visual explanation of technical concepts."
+description: "Generate beautiful, self-contained HTML pages that visually explain systems, code changes, plans, and data. Use when the user explicitly asks for any visual explanation of technical concepts."
 ---
 
 # Visual Explainer

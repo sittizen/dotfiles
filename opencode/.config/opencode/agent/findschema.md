@@ -1,7 +1,7 @@
 ---
 description: "Specialized in understading type schemas for input data. Use when you need to come up with a validation schema from a descriptive requirement."
 mode: subagent
-model: opencode/kimi-k2.5-free
+model: github-copilot/claude-haiku-4.5
 
 tools:
     write: false

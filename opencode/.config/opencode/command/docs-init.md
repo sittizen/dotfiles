@@ -12,11 +12,12 @@ The Documentation is the only link to previous work. It must be maintained with 
 
 The Main Documentation consists of two core files, in Markdown format.
 
-This directory structure is non-negotiable:
+This directory structure must be always present, relative to the component under scrutiny:
 ```
-docs/
-├── projectBrief.md
-└── systemPatterns.md
+...
+└──docs/
+   ├── projectBrief.md
+   └── systemPatterns.md
 ```
 
 ## Core Files
