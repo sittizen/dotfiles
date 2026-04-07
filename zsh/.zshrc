@@ -30,7 +30,7 @@ autoload -U compinit && compinit
 
 bindkey -v
 
-HISTSIZE=600
+HISTSIZE=800
 HISTFILE=~/.zsh_history
 SAVEHIST=$HISTSIZE
 HISTDUP=erase
