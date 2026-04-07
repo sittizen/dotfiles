@@ -31,8 +31,9 @@ return {
 	-- cmd = vim.lsp.rpc.connect('192.168.1.24', 9257),
 	filetypes = { "python" },
 	root_markers = {
-		"pyproject.toml",
 		".venv",
+		"pyproject.toml",
+		"requirements.txt",
 	},
 	settings = {
 		python = {
@@ -63,5 +64,5 @@ return {
 			})
 		end
 	end,
-	log_level = vim.lsp.protocol.MessageType.Warning,
+	log_level = vim.lsp.protocol.MessageType.Error,
 }
