@@ -304,6 +304,40 @@ install_beads() {
     fi
 }
 
+install_sqlit() {
+    local name="sqlit"
+    
+    if command_exists sqlit; then
+        add_skipped "$name" "already installed"
+        log_skip "${name} already installed at $(command -v sqlit)"
+        return 0
+    fi
+    
+    if ! command_exists pipx; then
+        log_info "pipx not found, attempting to install via apt..."
+        if ! sudo apt install -y pipx >>"$LOG_FILE" 2>&1; then
+            add_failed "$name" "pipx not available (install pipx first)"
+            log_error "${name}: could not install pipx"
+            return 1
+        fi
+    fi
+    
+    log_info "Installing ${name} via pipx..."
+    
+    if pipx install sqlit-tui >>"$LOG_FILE" 2>&1; then
+        if command_exists sqlit; then
+            add_installed "$name" "$(command -v sqlit) (pipx)"
+            log_success "${name} installed at $(command -v sqlit)"
+        else
+            add_failed "$name" "binary not found after install"
+            log_error "${name}: 'sqlit' command not found after pipx install"
+        fi
+    else
+        add_failed "$name" "pipx install failed"
+        log_error "${name}: pipx install sqlit-tui failed"
+    fi
+}
+
 install_port_whisperer() {
     local name="port-whisperer"
     
@@ -705,6 +739,7 @@ main() {
     install_lazydocker
     install_opencode
     install_beads
+    install_sqlit
     install_port_whisperer
     
     # Binary download tools

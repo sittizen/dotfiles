@@ -48,22 +48,8 @@ https://github.com/gitlab-org/cli
 ## opencode , open source AI coding agent
 https://opencode.ai
 
-### opencode plugins / tools
-
-#### plannotator ,  interactive plan review and save as html pages
-https://plannotator.ai
-
-#### context7 , latest docs via mcp
-https://context7.com
-
-#### context analysis, fast , useful during session
-https://github.com/IgorWarzocha/Opencode-Context-Analysis-Plugin
-
-#### tokenscope , more detailed, useful to assess the fixed costs 
-https://github.com/awesome-opencode/awesome-opencode
-
-#### beads , graph issue tracker for AI agents
-https://github.com/steveyegge/beads
+## sqlit , db client
+https://github.com/Maxteabag/sqlit
 
 Following tools permit to quickly take a look at the state of the code / system while developing, they can be opened in a tmux popup via shorcut while / after the coding agent is planning / building
 
@@ -75,6 +61,9 @@ https://github.com/jesseduffield/lazydocker
 
 ## btop , resource monitor
 https://github.com/arisotcratos/btop
+
+## port-whisperer  , see what's running on your ports
+https://github.com/LarsenCundric/port-whisperer
 
 ## tabview , lightweight application to view and query tabular data
 https://github.com/shshemi/tabview
@@ -95,4 +84,3 @@ https://obsproject.com/
 
 ## kdenlive , video editing
 https://kdenlive.org/
-
