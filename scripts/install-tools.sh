@@ -304,6 +304,37 @@ install_beads() {
     fi
 }
 
+install_port_whisperer() {
+    local name="port-whisperer"
+    
+    if command_exists ports; then
+        add_skipped "$name" "already installed"
+        log_skip "${name} already installed at $(command -v ports)"
+        return 0
+    fi
+    
+    if ! command_exists npm; then
+        add_failed "$name" "npm not found (install Node.js first)"
+        log_error "${name}: npm not found — install Node.js first"
+        return 1
+    fi
+    
+    log_info "Installing ${name} via npm..."
+    
+    if npm install -g port-whisperer >>"$LOG_FILE" 2>&1; then
+        if command_exists ports; then
+            add_installed "$name" "$(command -v ports) (npm global)"
+            log_success "${name} installed at $(command -v ports)"
+        else
+            add_failed "$name" "binary not found after install"
+            log_error "${name}: 'ports' command not found after npm install"
+        fi
+    else
+        add_failed "$name" "npm install failed"
+        log_error "${name}: npm install -g port-whisperer failed"
+    fi
+}
+
 # ============================================================================
 # Binary Download Tools
 # ============================================================================
@@ -674,6 +705,7 @@ main() {
     install_lazydocker
     install_opencode
     install_beads
+    install_port_whisperer
     
     # Binary download tools
     log_section "Binary Download Tools"
