@@ -65,6 +65,9 @@ https://github.com/arisotcratos/btop
 ## port-whisperer  , see what's running on your ports
 https://github.com/LarsenCundric/port-whisperer
 
+## marp , CLI for creating slide decks from Markdown
+https://github.com/marp-team/marp-cli
+
 ## tabview , lightweight application to view and query tabular data
 https://github.com/shshemi/tabview
 

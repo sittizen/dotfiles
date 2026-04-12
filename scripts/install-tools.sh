@@ -369,6 +369,37 @@ install_port_whisperer() {
     fi
 }
 
+install_marp() {
+    local name="marp"
+    
+    if command_exists marp; then
+        add_skipped "$name" "already installed"
+        log_skip "${name} already installed at $(command -v marp)"
+        return 0
+    fi
+    
+    if ! command_exists npm; then
+        add_failed "$name" "npm not found (install Node.js first)"
+        log_error "${name}: npm not found — install Node.js first"
+        return 1
+    fi
+    
+    log_info "Installing ${name} via npm..."
+    
+    if npm install -g @marp-team/marp-cli >>"$LOG_FILE" 2>&1; then
+        if command_exists marp; then
+            add_installed "$name" "$(command -v marp) (npm global)"
+            log_success "${name} installed at $(command -v marp)"
+        else
+            add_failed "$name" "binary not found after install"
+            log_error "${name}: 'marp' command not found after npm install"
+        fi
+    else
+        add_failed "$name" "npm install failed"
+        log_error "${name}: npm install -g @marp-team/marp-cli failed"
+    fi
+}
+
 # ============================================================================
 # Binary Download Tools
 # ============================================================================
@@ -741,6 +772,7 @@ main() {
     install_beads
     install_sqlit
     install_port_whisperer
+    install_marp
     
     # Binary download tools
     log_section "Binary Download Tools"
