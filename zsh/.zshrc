@@ -85,7 +85,9 @@ alias tma="timew start"
 alias tmo="timew stop"
 alias tms="timew summary"
 alias oc="opencode"
+alias oca="opencode attach http://locahost:9998"
 alias rt="ralph-tui"
+alias am="alsamixer"
 
 # functions
 v() {
@@ -127,3 +129,6 @@ gms() {
 eval "$(fzf --zsh)"
 eval "$(zoxide init zsh)"
 
+
+# opencode
+export PATH=/home/simone.cittadini@gruppomol.lcl/.opencode/bin:$PATH
