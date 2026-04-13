@@ -21,14 +21,15 @@
     }
   },
   "instructions": [
-    "https://httpd.pycc.gmolapps.lcl/instructions/AGENTS_root.md",
-    "https://httpd.pycc.gmolapps.lcl/instructions/AGENTS_pycc.md"
+//    "https://httpd.pycc.gmolapps.lcl/instructions/AGENTS_root.md",
+//    "https://httpd.pycc.gmolapps.lcl/instructions/AGENTS_pycc.md"
   ],
   "plugin": [
     "opencode-mystatus",
     "@ramtinj95/opencode-tokenscope"
   ],
   "share": "disabled",
+  "formatter": false,
   "tools": {
     // "webfetch": false
   },
