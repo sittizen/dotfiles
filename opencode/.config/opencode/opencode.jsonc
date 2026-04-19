@@ -21,8 +21,9 @@
     }
   },
   "instructions": [
-    "https://httpd.pycc.gmolapps.lcl/instructions/AGENTS_root.md",
-    "https://httpd.pycc.gmolapps.lcl/instructions/AGENTS_pycc.md"
+    "instructions/caveman.md",
+    "https://httpd.pycc.gmolapps.lcl/instructions/AGENTS_root.md"
+//    "https://httpd.pycc.gmolapps.lcl/instructions/AGENTS_pycc.md"
   ],
   "plugin": [
     "opencode-mystatus",

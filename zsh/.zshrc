@@ -88,7 +88,7 @@ alias oc="opencode"
 alias oca="opencode attach http://locahost:9998"
 alias rt="ralph-tui"
 alias am="alsamixer"
-alias marp="npx @marp-team/marp-cli@latest"
+alias marp="npx @marp-team/marp-cli@4.3.0"
 
 # functions
 v() {

@@ -7,6 +7,8 @@ return {
 				lua = { "stylua" },
 				python = { "ruff_format" },
 				go = { "gofmt" },
+				json = { "jq" },
+				jsonc = { "jq" },
 			},
 		})
 		require("conform").formatters.ruff = {
