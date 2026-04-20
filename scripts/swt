@@ -1,0 +1,19 @@
+#!/usr/bin/zsh
+set -e
+
+# usage: tw <branch>
+branch="$1"
+echo $branch
+
+repo_root=$(git rev-parse --show-toplevel)
+worktree_dir="${repo_root}/../${branch}"
+echo $worktree_dir
+
+# create worktree
+git worktree add "$worktree_dir" "$branch"
+
+# create or attach tmux session
+session_name=$(basename "$worktree_dir")
+
+tmux new-session -ds "$session_name" -c "$worktree_dir"
+tmux switch-client -t "$session_name"
