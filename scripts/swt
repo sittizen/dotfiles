@@ -2,12 +2,11 @@
 set -e
 
 # usage: tw <branch>
-branch="$1"
-echo $branch
+branch=$(git branch --all | sed 's/^[* ] //' | fzf --prompt "checkout: ") 
+branch=$(basename "$branch")
 
 repo_root=$(git rev-parse --show-toplevel)
 worktree_dir="${repo_root}/../${branch}"
-echo $worktree_dir
 
 # create worktree
 git worktree add "$worktree_dir" "$branch"
