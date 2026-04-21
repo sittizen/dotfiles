@@ -24,6 +24,7 @@ zinit snippet https://github.com/git/git/raw/master/contrib/completion/git-compl
 fpath=(~/.szh/completions $fpath)
 
 autoload -U compinit && compinit
+autoload -U ass-zsh-hook
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
@@ -113,6 +114,21 @@ gms() {
     export GITLAB_PROJECTS=231,239
   fi
 }
+
+auto_tmux_session() {
+  if git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+    root=$(git rev-parse --show-toplevel)
+    session=$(basename "$root")
+
+    if ! tmux has-session -t "$session" 2>/dev/null; then
+      tmux new-session -ds "$session" -c "$root"
+    fi
+
+    tmux switch-client -t "$session" 2>/dev/null || true
+  fi
+}
+
+add-zsh-hook chpwd auto_tmux_session
 
 ..() {
   cd ..
