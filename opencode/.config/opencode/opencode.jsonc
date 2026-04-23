@@ -3,17 +3,19 @@
   "autoupdate": true,
   "model": "opencode/minimax-m2.5-free",
   "small_model": "github-copilot/claude-haiku-4.5",
-  "provider":{
-  "leollama": {
-    "npm": "@ai-sdk/openai-compatible",
-    "name": "LeOllama",
-    "options": {
-      "baseURL": "http://192.168.1.24:11434/v1"
-    },
-    "models": {
-     "qwen3:8b": {"name": "qwen3:8b"}
+  "provider": {
+    "leollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "LeOllama",
+      "options": {
+        "baseURL": "http://192.168.1.24:11434/v1"
+      },
+      "models": {
+        "qwen3:8b": {
+          "name": "qwen3:8b"
+        }
+      }
     }
-  }
   },
   "agent": {
     "plan": {
@@ -21,9 +23,8 @@
     }
   },
   "instructions": [
-    "instructions/caveman.md",
+    "~/.config/opencode/instructions/caveman.md",
     "https://httpd.pycc.gmolapps.lcl/instructions/AGENTS_root.md"
-//    "https://httpd.pycc.gmolapps.lcl/instructions/AGENTS_pycc.md"
   ],
   "plugin": [
     "opencode-mystatus",
@@ -31,22 +32,19 @@
   ],
   "share": "disabled",
   "formatter": false,
-  "tools": {
-    // "webfetch": false
-  },
   "mcp": {
-  "context7": {
-    "type": "remote",
-    "url": "https://mcp.context7.com/mcp",
-    "headers": {
-      "CONTEXT7_API_KEY": "{env:CONTEXT7_API_KEY}"
-    },
-    "enabled": true
-  }
-},
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "CONTEXT7_API_KEY": "{env:CONTEXT7_API_KEY}"
+      },
+      "enabled": true
+    }
+  },
   "permission": {
-    "lsp":"allow" ,
-    "ralph-tui-prd":"allow"
+    "lsp": "allow",
+    "ralph-tui-prd": "allow"
   },
   "watcher": {
     "ignore": [
