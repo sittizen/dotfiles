@@ -44,7 +44,13 @@
   },
   "permission": {
     "lsp": "allow",
-    "ralph-tui-prd": "allow"
+    "ralph-tui-prd": "allow",
+    "read": {
+      "~/.config/opencode/get-shit-done/*": "allow"
+    },
+    "external_directory": {
+      "~/.config/opencode/get-shit-done/*": "allow"
+    }
   },
   "watcher": {
     "ignore": [
