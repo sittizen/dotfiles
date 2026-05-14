@@ -64,6 +64,7 @@ if [[ "$(hostname)" == "leona" ]]; then
     export VAULT_SKIP_VERIFY=true
 else
     export VAULT_ADDR=https://vault.pycc.gmolapps.lcl
+    export ARGO_SERVER_URL=https://argo.pycc.gmolapps.lcl
 fi
 
 # aliases
@@ -90,6 +91,7 @@ alias oca="opencode attach http://locahost:9998"
 alias rt="ralph-tui"
 alias am="alsamixer"
 alias marp="npx @marp-team/marp-cli@4.3.0"
+alias rp="uv run poe"
 
 # functions
 v() {
@@ -100,13 +102,15 @@ v() {
   fi
 }
 
-gms() {
+rs() {
   if [[ "$(hostname)" == "leona" ]]; then
     export CONTEXT7_API_KEY=$(vault kv get -format=json kv/leona/zsh 2>/dev/null | jq -r .data.data.ctx7)
   else
     PYPI_VALS=(`vault read -format json kv/prd/gitlab | jq -r '.data.pypi_install_user, .data.pypi_install_secret'`)
     export UV_INDEX_PYPIMOL_GITLAB_USERNAME=${PYPI_VALS[1]}
+    export UV_INDEX_PYPIMOL_USERNAME=${PYPI_VALS[1]}
     export UV_INDEX_PYPIMOL_GITLAB_PASSWORD=${PYPI_VALS[2]}
+    export UV_INDEX_PYPIMOL_PASSWORD=${PYPI_VALS[2]}
     export CONTEXT7_API_KEY=$(vault read -format=json kv/loc/simone.cittadini/zsh 2>/dev/null | jq -r .data.ctx7)
     export GOOGLE_TRANSLATE_API_KEY=$(vault read -format=json kv/loc/simone.cittadini/zsh 2>/dev/null | jq -r .data.gtranslate)
     export GITLAB_TOKEN=$(vault read -format=json kv/loc/simone.cittadini/zsh 2>/dev/null | jq -r .data.glam)
