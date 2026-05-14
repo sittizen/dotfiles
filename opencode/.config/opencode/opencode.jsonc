@@ -1,8 +1,8 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "autoupdate": true,
-  "model": "opencode/minimax-m2.5-free",
-  "small_model": "github-copilot/claude-haiku-4.5",
+  "model": "opencode/deepseek-v4-flash-free",
+  "small_model": "opencode/minimax-m2.5-free",
   "provider": {
     "leollama": {
       "npm": "@ai-sdk/openai-compatible",
@@ -26,10 +26,7 @@
     "~/.config/opencode/instructions/caveman.md",
     "https://httpd.pycc.gmolapps.lcl/instructions/AGENTS_root.md"
   ],
-  "plugin": [
-    "opencode-mystatus",
-    "@ramtinj95/opencode-tokenscope"
-  ],
+  "plugin": [],
   "share": "disabled",
   "formatter": false,
   "mcp": {
