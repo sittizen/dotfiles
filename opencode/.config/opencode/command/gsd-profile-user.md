@@ -8,7 +8,7 @@ tools:
   glob: true
   grep: true
   question: true
-  task: true
+  agent: true
 ---
 
 <objective>

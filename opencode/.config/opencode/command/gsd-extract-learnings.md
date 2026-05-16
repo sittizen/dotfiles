@@ -2,6 +2,7 @@
 description: Extract decisions, lessons, patterns, and surprises from completed phase artifacts
 argument-hint: <phase-number>
 type: prompt
+requires: [phase]
 tools:
   read: true
   write: true
@@ -15,7 +16,7 @@ Extract structured learnings from completed phase artifacts (PLAN.md, SUMMARY.md
 </objective>
 
 <execution_context>
-@/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/workflows/extract_learnings.md
+@/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/workflows/extract-learnings.md
 </execution_context>
 
-Execute the extract-learnings workflow from @/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/workflows/extract_learnings.md end-to-end.
+Execute the extract-learnings workflow from @/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/workflows/extract-learnings.md end-to-end.

@@ -1,5 +1,6 @@
 ---
 description: Archive accumulated phase directories from completed milestones
+requires: [phase]
 tools:
   read: true
   write: true
@@ -17,6 +18,6 @@ Use when `.planning/phases/` has accumulated directories from past milestones.
 </execution_context>
 
 <process>
-Follow the cleanup workflow at @/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/workflows/cleanup.md.
+Execute end-to-end.
 Identify completed milestones, show a dry-run summary, and archive on confirmation.
 </process>

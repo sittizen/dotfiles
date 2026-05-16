@@ -1,6 +1,7 @@
 ---
 description: Validate built features through conversational UAT
-argument-hint: "[phase number, e.g., '4']"
+argument-hint: "[phase number, e.g., '4'] [--ws <name>]"
+requires: [execute-phase, phase]
 tools:
   read: true
   bash: true
@@ -8,7 +9,7 @@ tools:
   grep: true
   edit: true
   write: true
-  task: true
+  agent: true
 ---
 <objective>
 Validate built features through conversational testing with persistent state.
@@ -32,6 +33,6 @@ Context files are resolved inside the workflow (`init verify-work`) and delegate
 </context>
 
 <process>
-Execute the verify-work workflow from @/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/workflows/verify-work.md end-to-end.
+Execute end-to-end.
 Preserve all workflow gates (session management, test presentation, diagnosis, fix planning, routing).
 </process>

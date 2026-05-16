@@ -1,11 +1,12 @@
 ---
 description: Start a new milestone cycle — update PROJECT.md and route to requirements
 argument-hint: "[milestone name, e.g., 'v1.1 Notifications']"
+requires: [new-project, phase, plan-phase]
 tools:
   read: true
   write: true
   bash: true
-  task: true
+  agent: true
   question: true
 ---
 <objective>
@@ -38,6 +39,6 @@ Project and milestone context files are resolved inside the workflow (`init new-
 </context>
 
 <process>
-Execute the new-milestone workflow from @/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/workflows/new-milestone.md end-to-end.
+Execute end-to-end.
 Preserve all workflow gates (validation, questioning, research, requirements, roadmap approval, commits).
 </process>

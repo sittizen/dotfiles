@@ -1,6 +1,7 @@
 ---
 description: Triage and review open GitHub issues and PRs against project templates and contribution guidelines.
 argument-hint: "[--issues] [--prs] [--label] [--close-incomplete] [--repo owner/repo]"
+requires: [review]
 tools:
   read: true
   bash: true
@@ -32,6 +33,6 @@ and optionally applies labels or closes non-compliant submissions.
 </context>
 
 <process>
-Execute the inbox workflow from @/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/workflows/inbox.md end-to-end.
+Execute end-to-end.
 Parse flags from arguments and pass to workflow.
 </process>

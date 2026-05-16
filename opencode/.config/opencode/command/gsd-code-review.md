@@ -1,13 +1,14 @@
 ---
 description: Review source files changed during a phase for bugs, security issues, and code quality problems
 argument-hint: "<phase-number> [--depth=quick|standard|deep] [--files file1,file2,...] [--fix [--all] [--auto]]"
+requires: [config, import, phase, quick, review]
 tools:
   read: true
   bash: true
   glob: true
   grep: true
   write: true
-  task: true
+  agent: true
 ---
 <objective>
 Review source files changed during a phase for bugs, security vulnerabilities, and code quality problems.
@@ -45,7 +46,7 @@ Context files (AGENTS.md, SUMMARY.md, phase state) are resolved inside the workf
 <process>
 This command is a thin dispatch layer. It parses arguments and delegates to the workflow.
 
-Execute the code-review workflow from @/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/workflows/code-review.md end-to-end.
+Execute end-to-end.
 
 The workflow (not this command) enforces these gates:
 - Phase validation (before config gate)

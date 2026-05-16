@@ -1,13 +1,14 @@
 ---
 description: Analyze codebase with parallel mapper agents to produce .planning/codebase/ documents
 argument-hint: "[--fast [--focus tech|arch|quality|concerns]] [--query <term>|status|diff|refresh] [area]"
+requires: [config, new-project, plan-phase]
 tools:
   read: true
   bash: true
   glob: true
   grep: true
   write: true
-  task: true
+  agent: true
 ---
 
 <objective>

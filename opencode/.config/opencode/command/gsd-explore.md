@@ -6,7 +6,7 @@ tools:
   bash: true
   grep: true
   glob: true
-  task: true
+  agent: true
   question: true
 ---
 <objective>
@@ -22,5 +22,5 @@ Accepts an optional topic argument: `/gsd-explore authentication strategy`
 </execution_context>
 
 <process>
-Execute the explore workflow from @/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/workflows/explore.md end-to-end.
+Execute end-to-end.
 </process>

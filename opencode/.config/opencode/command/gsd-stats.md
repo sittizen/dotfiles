@@ -1,5 +1,6 @@
 ---
 description: Display project statistics — phases, plans, requirements, git metrics, and timeline
+requires: [phase, progress]
 tools:
   read: true
   bash: true
@@ -13,5 +14,5 @@ Display comprehensive project statistics including phase progress, plan executio
 </execution_context>
 
 <process>
-Execute the stats workflow from @/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/workflows/stats.md end-to-end.
+Execute end-to-end.
 </process>

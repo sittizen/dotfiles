@@ -1,13 +1,14 @@
 ---
 description: Retroactive 6-pillar visual audit of implemented frontend code
 argument-hint: "[phase]"
+requires: [phase]
 tools:
   read: true
   write: true
   bash: true
   glob: true
   grep: true
-  task: true
+  agent: true
   question: true
 ---
 <objective>
@@ -26,6 +27,6 @@ Phase: $ARGUMENTS — optional, defaults to last completed phase.
 </context>
 
 <process>
-Execute @/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/workflows/ui-review.md end-to-end.
+Execute end-to-end.
 Preserve all workflow gates.
 </process>

@@ -1,6 +1,7 @@
 ---
 description: Execute a trivial task inline — no subagents, no planning overhead
 argument-hint: "[task description]"
+requires: [config, quick]
 tools:
   read: true
   write: true
@@ -25,5 +26,5 @@ you could describe in one sentence and execute in under 2 minutes.
 </execution_context>
 
 <process>
-Execute the fast workflow from @/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/workflows/fast.md end-to-end.
+Execute end-to-end.
 </process>

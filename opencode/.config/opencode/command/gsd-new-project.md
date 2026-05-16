@@ -1,11 +1,12 @@
 ---
 description: Initialize a new project with deep context gathering and PROJECT.md
 argument-hint: "[--auto]"
+requires: [config, phase, plan-phase]
 tools:
   read: true
   bash: true
   write: true
-  task: true
+  agent: true
   question: true
 ---
 <runtime_note>
@@ -40,6 +41,6 @@ Initialize a new project through unified flow: questioning → research (optiona
 </execution_context>
 
 <process>
-Execute the new-project workflow from @/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/workflows/new-project.md end-to-end.
+Execute end-to-end.
 Preserve all workflow gates (validation, approvals, commits, routing).
 </process>

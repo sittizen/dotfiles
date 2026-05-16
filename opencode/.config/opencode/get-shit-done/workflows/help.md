@@ -64,12 +64,13 @@ Usage: `/gsd-map-codebase`
 
 ### Phase Planning
 
-**`/gsd-discuss-phase <number> [--chain | --analyze | --power] [--batch[=N]]`**
+**`/gsd-discuss-phase <number> [--chain | --analyze | --power | --assumptions] [--batch[=N]]`**
 Help articulate your vision for a phase before planning.
 
 - `--chain` — chained-prompt discuss flow
 - `--analyze` — deep assumption analysis pass
 - `--power` — power-user mode with extended question set
+- `--assumptions` — surface the agent's implementation assumptions about the phase without an interactive session
 
 - Captures how you imagine this phase working
 - Creates CONTEXT.md with your vision, essentials, and boundaries
@@ -80,7 +81,18 @@ Usage: `/gsd-discuss-phase 2`
 Usage: `/gsd-discuss-phase 2 --batch`
 Usage: `/gsd-discuss-phase 2 --batch=3`
 
-**`/gsd-plan-phase <number> [--research] [--skip-research] [--research-phase <N>] [--view] [--gaps] [--skip-verify] [--tdd] [--mvp]`**
+**`/gsd-mvp-phase <number> [--force]`**
+Plan a phase as a vertical MVP slice — three structured user-story prompts (`As a / I want to / So that`), SPIDR splitting if the story is too large, then delegates to `/gsd-plan-phase` with MVP mode active.
+
+- Mutates the phase's ROADMAP entry: writes `**Mode:** mvp` + replaces `**Goal:**` with the assembled user story
+- Validates the story via `gsd-sdk query user-story.validate` (canonical regex `/^As a .+, I want to .+, so that .+\.$/`)
+- `--force` overrides the status guard (required if the phase is already `in_progress` or `completed`)
+- Pairs with the new-project mode prompt (Vertical MVP vs Horizontal Layers)
+
+Usage: `/gsd-mvp-phase 1`
+Usage: `/gsd-mvp-phase 2 --force`
+
+**`/gsd-plan-phase <number> [--research] [--skip-research] [--research-phase <N>] [--view] [--gaps] [--skip-verify] [--prd <file>] [--ingest <path-or-glob>] [--ingest-format <auto|nygard|madr|narrative>] [--tdd] [--mvp]`**
 Create detailed execution plan for a specific phase.
 
 - `--skip-research` — bypass the research subagent
@@ -88,6 +100,9 @@ Create detailed execution plan for a specific phase.
   - Modifiers: `--research` forces refresh (re-spawn researcher, no prompt). `--view` prints existing `RESEARCH.md` to stdout without spawning. With neither, prompts `update / view / skip` if `RESEARCH.md` already exists.
 - `--gaps` — focus only on closing gaps from a prior plan-check
 - `--skip-verify` — skip the post-plan verifier loop
+- `--prd <file>` — use a PRD file as planning context and skip discuss-phase (mutually exclusive with `--ingest`)
+- `--ingest <path-or-glob>` — use ADR file(s) as planning context and skip discuss-phase (mutually exclusive with `--prd`)
+- `--ingest-format <auto|nygard|madr|narrative>` — optional ADR parser format override
 - `--tdd` — plan in test-driven order (tests before code)
 - `--mvp` — vertical-slice MVP planning mode
 
@@ -102,7 +117,9 @@ Usage: `/gsd-plan-phase --research-phase 2 --view` — print existing `RESEARCH.
 Usage: `/gsd-plan-phase --research-phase 2 --research` — force-refresh, no prompt
 Result: Creates `.planning/phases/01-foundation/01-01-PLAN.md`
 
-**PRD Express Path:** Pass `--prd path/to/requirements.md` to skip discuss-phase entirely. Your PRD becomes locked decisions in CONTEXT.md. Useful when you already have clear acceptance criteria.
+**PRD Express Path:** Pass `--prd path/to/requirements.md` to skip discuss-phase entirely. Your PRD becomes locked decisions in CONTEXT.md. Useful when you already have clear acceptance criteria. Cannot be combined with `--ingest`.
+
+**ADR Ingest Express Path:** Pass `--ingest path/to/adr.md` (or a glob) to skip discuss-phase and synthesize CONTEXT.md from approved ADR decisions and scope fences. Cannot be combined with `--prd`.
 
 ### Execution
 
@@ -271,9 +288,10 @@ Resume work from previous session with full context restoration.
 
 Usage: `/gsd-resume-work`
 
-**`/gsd-pause-work`**
+**`/gsd-pause-work [--report]`**
 Create context handoff when pausing work mid-phase.
 
+- `--report` — generate a post-session summary in `.planning/reports/` capturing commits, file changes, and phase progress
 - Creates .continue-here file with current state
 - Updates STATE.md session continuity section
 - Captures in-progress work context
@@ -504,6 +522,19 @@ Configure GSD beyond the basic settings: model profile, advanced tuning, and thi
 
 Usage: `/gsd-config --profile budget`
 
+**`/gsd-surface [list|status|profile <name>|disable <cluster>|enable <cluster>|reset]`**
+Toggle which skills are surfaced — apply a profile, list, or disable a cluster without reinstall.
+
+- `list` / `status` — Show enabled and disabled clusters and skills with token cost
+- `profile <name>` — Switch to a named base profile (`core`, `standard`, `full`)
+- `disable <cluster>` — Remove a cluster from the active surface
+- `enable <cluster>` — Add a cluster back to the active surface
+- `reset` — Delete the surface delta and return to the install-time profile
+
+Usage: `/gsd-surface list`
+Usage: `/gsd-surface profile standard`
+Usage: `/gsd-surface disable utility`
+
 ### Utility Commands
 
 **`/gsd-cleanup`**
@@ -543,7 +574,7 @@ The commands above cover the most common day-to-day flows. Every command listed 
 - **`/gsd-spec-phase <phase> [--auto] [--text]`** — Clarify WHAT a phase delivers with ambiguity scoring; produces a SPEC.md before discuss-phase.
 - **`/gsd-ai-integration-phase [phase]`** — Generate an AI-SPEC.md design contract for phases that involve building AI systems.
 - **`/gsd-ui-phase [phase]`** — Generate UI design contract (UI-SPEC.md) for frontend phases.
-- **`/gsd-import --from <filepath>`** — Ingest external plans with conflict detection against project decisions before writing anything.
+- **`/gsd-import --from <filepath> | --from-gsd2`** — Ingest external plans with conflict detection, or reverse-migrate a GSD-2 (`.gsd/`) project back to GSD v1 (`.planning/`) format.
 - **`/gsd-ingest-docs [path] [--mode new|merge] [--manifest <file>] [--resolve auto|interactive]`** — Bootstrap or merge a `.planning/` setup from existing ADRs, PRDs, SPECs, and docs in a repo.
 
 ### Planning & Execution
@@ -579,7 +610,7 @@ The commands above cover the most common day-to-day flows. Every command listed 
 
 ### Workflow & Orchestration
 
-- **`/gsd-manager`** — Interactive command center for managing multiple phases from one terminal.
+- **`/gsd-manager [--analyze-deps]`** — Interactive command center for managing multiple phases from one terminal. `--analyze-deps` scans ROADMAP phases for dependency relationships before parallel execution.
 - **`/gsd-workspace [--new | --list | --remove] [name]`** — Manage GSD workspaces: create, list, or remove isolated workspace environments.
 - **`/gsd-workstreams`** — Manage parallel workstreams: list, create, switch, status, progress, complete, and resume.
 - **`/gsd-review-backlog`** — Review and promote backlog items to active milestone.
@@ -597,7 +628,7 @@ These six skills exist primarily for the model to perform two-stage hierarchical
 - **`/gsd-ideate`** — Exploration / capture routing (explore, sketch, spike, spec, capture).
 - **`/gsd-manage`** — Configuration and workspace routing (workstreams, thread, update, ship, inbox).
 - **`/gsd-project`** — Project-lifecycle routing (milestones, audits, summary).
-- **`/gsd-review`** — Quality-gate routing (code review, debug, audit, security, eval, ui).
+- **`/gsd-quality`** — Quality-gate routing (code review, debug, audit, security, eval, ui).
 - **`/gsd-workflow`** — Phase-pipeline routing (discuss, plan, execute, verify, phase, progress).
 
 ## Files & Structure

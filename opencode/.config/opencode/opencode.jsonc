@@ -39,8 +39,8 @@
       "enabled": true
     }
   },
+  "lsp": true,
   "permission": {
-    "lsp": "allow",
     "ralph-tui-prd": "allow",
     "read": {
       "~/.config/opencode/get-shit-done/*": "allow"

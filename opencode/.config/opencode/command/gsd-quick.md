@@ -1,6 +1,7 @@
 ---
 description: Execute a quick task with GSD guarantees (atomic commits, state tracking) but skip optional agents
 argument-hint: "[list | status <slug> | resume <slug> | --full] [--validate] [--discuss] [--research] [task description]"
+requires: [phase]
 tools:
   read: true
   write: true
@@ -8,7 +9,7 @@ tools:
   glob: true
   grep: true
   bash: true
-  task: true
+  agent: true
   question: true
 ---
 <objective>
@@ -152,7 +153,7 @@ When SUBCMD=resume and SLUG is set (already sanitized):
 
 When SUBCMD=run:
 
-Execute the quick workflow from @/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/workflows/quick.md end-to-end.
+Execute end-to-end.
 Preserve all workflow gates (validation, task description, planning, execution, state updates, commits).
 
 </process>

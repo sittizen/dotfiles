@@ -1,6 +1,7 @@
 ---
 description: Run all remaining phases autonomously — discuss→plan→execute per phase
 argument-hint: "[--from N] [--to N] [--only N] [--interactive]"
+requires: [cleanup, phase, progress]
 tools:
   read: true
   write: true
@@ -8,7 +9,6 @@ tools:
   glob: true
   grep: true
   question: true
-  task: true
   agent: true
 ---
 <objective>
@@ -40,6 +40,6 @@ Project context, phase list, and state are resolved inside the workflow using in
 </context>
 
 <process>
-Execute the autonomous workflow from @/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/workflows/autonomous.md end-to-end.
+Execute end-to-end.
 Preserve all workflow gates (phase discovery, per-phase execution, blocker handling, progress display).
 </process>

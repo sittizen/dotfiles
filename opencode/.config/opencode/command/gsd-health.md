@@ -1,6 +1,7 @@
 ---
 description: Diagnose planning directory health and optionally repair issues
 argument-hint: "[--repair] [--context]"
+requires: [thread]
 tools:
   read: true
   bash: true
@@ -24,6 +25,6 @@ Validate `.planning/` directory integrity and report actionable issues. Checks f
 </execution_context>
 
 <process>
-Execute the health workflow from @/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/workflows/health.md end-to-end.
+Execute end-to-end.
 Parse `--repair` and `--context` flags from arguments and pass to workflow.
 </process>

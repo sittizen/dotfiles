@@ -18,6 +18,6 @@ Output ONLY the reference content below. Do NOT add:
 </execution_context>
 
 <process>
-Output the complete GSD command reference from @/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/workflows/help.md.
+Execute end-to-end.
 Display the reference content directly — no additions or modifications.
 </process>

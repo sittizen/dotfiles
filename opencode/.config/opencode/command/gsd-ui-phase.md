@@ -1,13 +1,14 @@
 ---
 description: Generate UI design contract (UI-SPEC.md) for frontend phases
 argument-hint: "[phase]"
+requires: [phase]
 tools:
   read: true
   write: true
   bash: true
   glob: true
   grep: true
-  task: true
+  agent: true
   webfetch: true
   question: true
   mcp__context7__*: true
@@ -28,6 +29,6 @@ Phase number: $ARGUMENTS — optional, auto-detects next unplanned phase if omit
 </context>
 
 <process>
-Execute @/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/workflows/ui-phase.md end-to-end.
+Execute end-to-end.
 Preserve all workflow gates.
 </process>

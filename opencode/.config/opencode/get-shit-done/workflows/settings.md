@@ -49,7 +49,7 @@ Parse current values (default to `true` if not present):
 - `workflow.code_review_depth` — default depth for /gsd-code-review: `quick`, `standard`, or `deep` (default: `"standard"` if absent; only relevant when `code_review` is on)
 - `workflow.ui_review` — run visual quality audit (/gsd-ui-review) in autonomous mode (default: true if absent)
 - `commit_docs` — whether `.planning/` files are committed to git (default: true if absent)
-- `intel.enabled` — enable queryable codebase intelligence (/gsd-intel) (default: false if absent)
+- `intel.enabled` — enable queryable codebase intelligence (/gsd-map-codebase --query) (default: false if absent)
 - `graphify.enabled` — enable project knowledge graph (/gsd-graphify) (default: false if absent)
 - `model_profile` — which model each agent uses (default: `balanced`)
 - `git.branching_strategy` — branching approach (default: `"none"`)
@@ -186,7 +186,7 @@ question([
     multiSelect: false,
     options: [
       { label: "No (Recommended)", description: "Manual /clear + paste between stages" },
-      { label: "Yes", description: "Chain stages via Task() subagents (same isolation)" }
+      { label: "Yes", description: "Chain stages via Agent() subagents (same isolation)" }
     ]
   },
   {
@@ -247,6 +247,15 @@ question([
     ]
   },
   {
+    question: "Create git tags on milestone completion?",
+    header: "Git Tagging",
+    multiSelect: false,
+    options: [
+      { label: "Yes (Recommended)", description: "Tag releases with version (e.g., v1.0) on milestone completion" },
+      { label: "No", description: "Skip git tagging — use if your project doesn't use tags or uses a different release convention" }
+    ]
+  },
+  {
     question: "Enable context window warnings? (injects advisory messages when context is getting full)",
     header: "Ctx Warnings",
     multiSelect: false,
@@ -292,12 +301,12 @@ question([
     ]
   },
   {
-    question: "Enable Intel? (queryable codebase intelligence via /gsd-intel — builds a JSON index in .planning/intel/)",
+    question: "Enable Intel? (queryable codebase intelligence via /gsd-map-codebase --query — builds a JSON index in .planning/intel/)",
     header: "Intel",
     multiSelect: false,
     options: [
       { label: "No (Recommended)", description: "Skip intel indexing. Use when codebase is small or intel queries are not needed." },
-      { label: "Yes", description: "Enable /gsd-intel commands. Builds and queries a JSON index of the codebase." }
+      { label: "Yes", description: "Enable /gsd-map-codebase --query commands. Builds and queries a JSON index of the codebase." }
     ]
   },
   {
@@ -349,7 +358,8 @@ Merge new settings into existing config.json:
   },
   "git": {
     "branching_strategy": "none" | "phase" | "milestone",
-    "quick_branch_template": <string|null>
+    "quick_branch_template": <string|null>,
+    "create_tag": true/false
   },
   "hooks": {
     "context_warnings": true/false,
@@ -450,6 +460,7 @@ Display:
 | UI Safety Gate       | {On/Off} |
 | AI Integration Phase | {On/Off} |
 | Git Branching        | {None/Per Phase/Per Milestone} |
+| Git Tagging          | {On/Off} |
 | Skip Discuss         | {On/Off} |
 | Context Warnings     | {On/Off} |
 | Saved as Defaults    | {Yes/No} |
@@ -470,7 +481,7 @@ Quick commands:
 
 <success_criteria>
 - [ ] Current config read
-- [ ] User presented with 22 settings (profile + workflow toggles + features + git branching + ctx warnings), grouped into six sections: Planning, Execution, Docs & Output, Features, Model & Pipeline, Misc. `code_review_depth` is conditional on `code_review=on`.
+- [ ] User presented with 23 settings (profile + workflow toggles + features + git branching + git tagging + ctx warnings), grouped into six sections: Planning, Execution, Docs & Output, Features, Model & Pipeline, Misc. `code_review_depth` is conditional on `code_review=on`.
 - [ ] Config updated with model_profile, workflow, and git sections
 - [ ] User offered to save as global defaults (~/.gsd/defaults.json)
 - [ ] Changes confirmed to user
