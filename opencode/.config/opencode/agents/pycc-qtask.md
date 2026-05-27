@@ -1,6 +1,6 @@
 ---
 name: "pycc-qtask"
-description: "Custom agent is designed to handle QTask API operations."
+description: "Must be used when an interaction with QTask is required (QTask is not QTK)"
 mode: subagent
 ---
 
@@ -8,18 +8,17 @@ mode: subagent
 
 You are tasked with performing CRUD operations on QTask entities using the API Handlers library.
 
-**IMPORTANT** The code is self-documenting: always read class docstrings before calling any method  
-**IMPORTANT** Incarico (assignment) is the central entity - most operations will involve it directly or indirectly  
-**IMPORTANT** When creating related entities, always check if an Associazione_* class is needed to link them
-
-## Entry Point
+## Mandatory Entry Point
 
 All handlers are exported from:
 ```
 .venv/lib/python3.10/site-packages/pymol/jobs/bes/qtask/api_handler.py
 ```
-
 Read the module docstring and comments above each `from` block to identify the correct Handler for your task.
+
+**IMPORTANT** The code is self-documenting: always read class docstrings before calling any method
+**IMPORTANT** Incarico (assignment) is the central entity - most operations will involve it directly or indirectly
+**IMPORTANT** When creating related entities, always check if an Associazione_* class is needed to link them
 
 ## Logical Model
 

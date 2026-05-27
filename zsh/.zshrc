@@ -55,7 +55,7 @@ zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 
 # env vals
 export SHELL=/bin/zsh
-export EDITOR=nvim
+export EDITOR=/usr/local/bin/nvim
 export OPENCODE_EXPERIMENTAL_LSP_TOOL=true
 export CHROME_DEVEL_SANDBOX=/usr/local/sbin/chrome_sandbox
 
