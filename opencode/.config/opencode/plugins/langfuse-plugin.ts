@@ -1,0 +1,1 @@
+/home/simone.cittadini@gruppomol.lcl/workspace/argo/langfuse-plugin/langfuse-plugin.ts

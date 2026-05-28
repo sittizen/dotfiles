@@ -1,1 +1,0 @@
-/home/simone.cittadini@gruppomol.lcl/workspace/argo/opencode-plugin/argo-plugin.ts

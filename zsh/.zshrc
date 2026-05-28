@@ -116,6 +116,15 @@ rs() {
     export GITLAB_TOKEN=$(vault read -format=json kv/loc/simone.cittadini/zsh 2>/dev/null | jq -r .data.glam)
     export GITLAB_URL=https://gitlab.gruppomol.lcl/
     export GITLAB_PROJECTS=231,239
+    export LANGFUSE_SECRET_KEY="sk-lf-5e654179-fe28-49b6-8f8f-06b61a36e592"
+    export LANGFUSE_PUBLIC_KEY="pk-lf-c1374b5d-d17e-4b99-8615-4aaa8b5f9725"
+    export LANGFUSE_BASE_URL="https://langfuse.aiml-test.gmolapps.lcl"
+    export OTEL_EXPORTER_OTLP_ENDPOINT="https://langfuse.aiml-test.gmolapps.lcl/api/public/otel"
+    export OTEL_EXPORTER_OTLP_TRACES_ENDPOINT="https://langfuse.aiml-test.gmolapps.lcl/api/public/otel/v1/traces"
+    export OTEL_EXPORTER_OTLP_PROTOCOL="http/json"
+    LANGFUSE_AUTH=$(echo -n "$LANGFUSE_PUBLIC_KEY:$LANGFUSE_SECRET_KEY" | base64 -w0)
+    export OTEL_EXPORTER_OTLP_HEADERS="Authorization=Basic ${LANGFUSE_AUTH},x-langfuse-ingestion-version=4"
+    export OTEL_RESOURCE_ATTRIBUTES=team.id=platform,department=engineering
   fi
 }
 
