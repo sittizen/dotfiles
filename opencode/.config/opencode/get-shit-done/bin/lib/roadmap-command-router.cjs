@@ -1,21 +1,26 @@
 'use strict';
 
-const { ROADMAP_SUBCOMMANDS } = require('./command-aliases.generated.cjs');
+const { ROADMAP_SUBCOMMANDS } = require('./command-aliases.cjs');
+const { routeCjsCommandFamily } = require('./cjs-command-router-adapter.cjs');
 
+/**
+ * Manifest-backed roadmap subcommand router.
+ * Keeps gsd-tools.cjs thin while preserving existing command semantics.
+ */
 function routeRoadmapCommand({ roadmap, args, cwd, raw, error }) {
-  const subcommand = args[1];
-
-  if (subcommand === 'get-phase') {
-    roadmap.cmdRoadmapGetPhase(cwd, args[2], raw);
-  } else if (subcommand === 'analyze') {
-    roadmap.cmdRoadmapAnalyze(cwd, raw);
-  } else if (subcommand === 'update-plan-progress') {
-    roadmap.cmdRoadmapUpdatePlanProgress(cwd, args[2], raw);
-  } else if (subcommand === 'annotate-dependencies') {
-    roadmap.cmdRoadmapAnnotateDependencies(cwd, args[2], raw);
-  } else {
-    error(`Unknown roadmap subcommand. Available: ${ROADMAP_SUBCOMMANDS.join(', ')}`);
-  }
+  routeCjsCommandFamily({
+    args,
+    subcommands: ROADMAP_SUBCOMMANDS,
+    unsupported: {},
+    error,
+    unknownMessage: (_subcommand, available) => `Unknown roadmap subcommand. Available: ${available.join(', ')}`,
+    handlers: {
+      'get-phase': () => roadmap.cmdRoadmapGetPhase(cwd, args[2], raw),
+      analyze: () => roadmap.cmdRoadmapAnalyze(cwd, raw),
+      'update-plan-progress': () => roadmap.cmdRoadmapUpdatePlanProgress(cwd, args[2], raw),
+      'annotate-dependencies': () => roadmap.cmdRoadmapAnnotateDependencies(cwd, args[2], raw),
+    },
+  });
 }
 
 module.exports = {

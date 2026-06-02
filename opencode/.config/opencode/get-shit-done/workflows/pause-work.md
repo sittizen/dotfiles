@@ -66,7 +66,8 @@ Report any summaries with placeholder content as incomplete items.
 **Write structured handoff to `.planning/HANDOFF.json`:**
 
 ```bash
-timestamp=$(gsd-sdk query current-timestamp full --raw)
+_GSD_SHIM_NAME="gsd-tools.cjs"; _GSD_RUNTIME_ROOT="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"; GSD_TOOLS="${_GSD_RUNTIME_ROOT}/get-shit-done/bin/${_GSD_SHIM_NAME}"; if [ -f "$GSD_TOOLS" ]; then gsd_run() { node "$GSD_TOOLS" "$@"; }; elif [ -f "${_GSD_RUNTIME_ROOT}/.claude/get-shit-done/bin/${_GSD_SHIM_NAME}" ]; then GSD_TOOLS="${_GSD_RUNTIME_ROOT}/.claude/get-shit-done/bin/${_GSD_SHIM_NAME}"; gsd_run() { node "$GSD_TOOLS" "$@"; }; elif command -v gsd-tools >/dev/null 2>&1; then GSD_TOOLS="$(command -v gsd-tools)"; gsd_run() { "$GSD_TOOLS" "$@"; }; elif [ -f "/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/bin/${_GSD_SHIM_NAME}" ]; then GSD_TOOLS="/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/bin/${_GSD_SHIM_NAME}"; gsd_run() { node "$GSD_TOOLS" "$@"; }; else echo "ERROR: gsd-tools.cjs not found at $GSD_TOOLS and gsd-tools is not on PATH. Run: npx -y @opengsd/gsd-core@latest --claude --local" >&2; exit 1; fi
+timestamp=$(gsd_run query current-timestamp full --raw)
 ```
 
 ```json
@@ -201,13 +202,13 @@ Be specific enough for a fresh the agent to understand immediately.
 
 Use `current-timestamp` for last_updated field. You can use init todos (which provides timestamps) or call directly:
 ```bash
-timestamp=$(gsd-sdk query current-timestamp full --raw)
+timestamp=$(gsd_run query current-timestamp full --raw)
 ```
 </step>
 
 <step name="commit">
 ```bash
-gsd-sdk query commit "wip: [context-name] paused at [X]/[Y]" --files [handoff-path] .planning/HANDOFF.json
+gsd_run query commit "wip: [context-name] paused at [X]/[Y]" --files [handoff-path] .planning/HANDOFF.json
 ```
 </step>
 

@@ -29,7 +29,8 @@ Exit.
 Load phase operation context:
 
 ```bash
-INIT=$(gsd-sdk query init.phase-op "${target}")
+_GSD_SHIM_NAME="gsd-tools.cjs"; _GSD_RUNTIME_ROOT="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"; GSD_TOOLS="${_GSD_RUNTIME_ROOT}/get-shit-done/bin/${_GSD_SHIM_NAME}"; if [ -f "$GSD_TOOLS" ]; then gsd_run() { node "$GSD_TOOLS" "$@"; }; elif [ -f "${_GSD_RUNTIME_ROOT}/.claude/get-shit-done/bin/${_GSD_SHIM_NAME}" ]; then GSD_TOOLS="${_GSD_RUNTIME_ROOT}/.claude/get-shit-done/bin/${_GSD_SHIM_NAME}"; gsd_run() { node "$GSD_TOOLS" "$@"; }; elif command -v gsd-tools >/dev/null 2>&1; then GSD_TOOLS="$(command -v gsd-tools)"; gsd_run() { "$GSD_TOOLS" "$@"; }; elif [ -f "/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/bin/${_GSD_SHIM_NAME}" ]; then GSD_TOOLS="/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/bin/${_GSD_SHIM_NAME}"; gsd_run() { node "$GSD_TOOLS" "$@"; }; else echo "ERROR: gsd-tools.cjs not found at $GSD_TOOLS and gsd-tools is not on PATH. Run: npx -y @opengsd/gsd-core@latest --claude --local" >&2; exit 1; fi
+INIT=$(gsd_run query init.phase-op "${target}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -77,16 +78,16 @@ Wait for confirmation.
 </step>
 
 <step name="execute_removal">
-**Delegate the entire removal operation to `gsd-sdk query phase.remove`:**
+**Delegate the entire removal operation to `gsd-tools.cjs query phase.remove`:**
 
 ```bash
-RESULT=$(gsd-sdk query phase.remove "${target}")
+RESULT=$(gsd_run query phase.remove "${target}")
 ```
 
 If the phase has executed plans (SUMMARY.md files), the CLI will error. Use `--force` only if the user confirms:
 
 ```bash
-RESULT=$(gsd-sdk query phase.remove "${target}" --force)
+RESULT=$(gsd_run query phase.remove "${target}" --force)
 ```
 
 The CLI handles:
@@ -103,7 +104,7 @@ Extract from result: `removed`, `directory_deleted`, `renamed_directories`, `ren
 Stage and commit the removal:
 
 ```bash
-gsd-sdk query commit "chore: remove phase {target} ({original-phase-name})" --files .planning/
+gsd_run query commit "chore: remove phase {target} ({original-phase-name})" --files .planning/
 ```
 
 The commit message preserves the historical record of what was removed.
@@ -140,7 +141,7 @@ Would you like to:
 
 - Don't remove completed phases (have SUMMARY.md files) without --force
 - Don't remove current or past phases
-- Don't manually renumber — use `gsd-sdk query phase.remove` which handles all renumbering
+- Don't manually renumber — use `gsd-tools.cjs query phase.remove` which handles all renumbering
 - Don't add "removed phase" notes to STATE.md — git commit is the record
 - Don't modify completed phase directories
 </anti_patterns>
@@ -149,7 +150,7 @@ Would you like to:
 Phase removal is complete when:
 
 - [ ] Target phase validated as future/unstarted
-- [ ] `gsd-sdk query phase.remove` executed successfully
+- [ ] `gsd-tools.cjs query phase.remove` executed successfully
 - [ ] Changes committed with descriptive message
 - [ ] User informed of changes
 </success_criteria>

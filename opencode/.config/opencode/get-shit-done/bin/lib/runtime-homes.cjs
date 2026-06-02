@@ -22,6 +22,7 @@
 
 const os = require('os');
 const path = require('path');
+const fs = require('fs');
 
 /**
  * Expand a leading ~ to os.homedir().
@@ -32,6 +33,43 @@ function expandTilde(p) {
   if (!p) return p;
   if (p.startsWith('~/') || p === '~') return path.join(os.homedir(), p.slice(1));
   return p;
+}
+
+/**
+ * Resolve Antigravity global config dir across 1.x and 2.x layouts.
+ *
+ * Order:
+ * 1) ANTIGRAVITY_CONFIG_DIR override
+ * 2) Existing legacy/new runtime directories under ~/.gemini/
+ *    - antigravity (1.x + documented baseline)
+ *    - antigravity-ide (2.x IDE split)
+ *    - antigravity-cli (2.x CLI split)
+ * 3) Legacy default (~/.gemini/antigravity) for backward compatibility
+ *
+ * @param {object} [opts]
+ * @param {Record<string, string | undefined>} [opts.env]
+ * @param {string} [opts.home]
+ * @param {(p: string) => boolean} [opts.existsSync]
+ * @returns {string}
+ */
+function resolveAntigravityGlobalDir(opts = {}) {
+  const env = opts.env || process.env;
+  const home = opts.home || os.homedir();
+  const existsSyncFn = opts.existsSync || fs.existsSync;
+
+  if (env.ANTIGRAVITY_CONFIG_DIR) return expandTilde(env.ANTIGRAVITY_CONFIG_DIR);
+
+  const base = path.join(home, '.gemini');
+  const candidates = [
+    path.join(base, 'antigravity'),
+    path.join(base, 'antigravity-ide'),
+    path.join(base, 'antigravity-cli'),
+  ];
+  for (const candidate of candidates) {
+    if (existsSyncFn(candidate)) return candidate;
+  }
+
+  return path.join(base, 'antigravity');
 }
 
 /**
@@ -62,15 +100,20 @@ function getGlobalConfigDir(runtime) {
     case 'codex':
       return env.CODEX_HOME ? expandTilde(env.CODEX_HOME) : path.join(home, '.codex');
 
+    // ── Grok Build ───────────────────────────────────────────────────────────
+    // Uses the unified ~/.agents layout (skills + agents + engine) shared with
+    // Codex-style harnesses. This is the pragmatic primary target for users
+    // running GSD inside Grok Build.
+    case 'grok':
+      return env.GROK_AGENTS_HOME ? expandTilde(env.GROK_AGENTS_HOME) : path.join(home, '.agents');
+
     // ── Copilot (VS Code) ────────────────────────────────────────────────────
     case 'copilot':
       return env.COPILOT_CONFIG_DIR ? expandTilde(env.COPILOT_CONFIG_DIR) : path.join(home, '.copilot');
 
     // ── Antigravity ──────────────────────────────────────────────────────────
     case 'antigravity':
-      return env.ANTIGRAVITY_CONFIG_DIR
-        ? expandTilde(env.ANTIGRAVITY_CONFIG_DIR)
-        : path.join(home, '.gemini', 'antigravity');
+      return resolveAntigravityGlobalDir({ env, home });
 
     // ── Windsurf ─────────────────────────────────────────────────────────────
     case 'windsurf':
@@ -175,4 +218,5 @@ module.exports = {
   getGlobalSkillsBase,
   getGlobalSkillDir,
   getGlobalSkillDisplayPath,
+  resolveAntigravityGlobalDir,
 };

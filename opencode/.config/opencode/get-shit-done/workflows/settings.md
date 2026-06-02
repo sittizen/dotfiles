@@ -12,8 +12,9 @@ Read all files referenced by the invoking prompt's execution_context before star
 Ensure config exists and load current state:
 
 ```bash
-gsd-sdk query config-ensure-section
-INIT=$(gsd-sdk query state.load)
+_GSD_SHIM_NAME="gsd-tools.cjs"; _GSD_RUNTIME_ROOT="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"; GSD_TOOLS="${_GSD_RUNTIME_ROOT}/get-shit-done/bin/${_GSD_SHIM_NAME}"; if [ -f "$GSD_TOOLS" ]; then gsd_run() { node "$GSD_TOOLS" "$@"; }; elif [ -f "${_GSD_RUNTIME_ROOT}/.claude/get-shit-done/bin/${_GSD_SHIM_NAME}" ]; then GSD_TOOLS="${_GSD_RUNTIME_ROOT}/.claude/get-shit-done/bin/${_GSD_SHIM_NAME}"; gsd_run() { node "$GSD_TOOLS" "$@"; }; elif command -v gsd-tools >/dev/null 2>&1; then GSD_TOOLS="$(command -v gsd-tools)"; gsd_run() { "$GSD_TOOLS" "$@"; }; elif [ -f "/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/bin/${_GSD_SHIM_NAME}" ]; then GSD_TOOLS="/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/bin/${_GSD_SHIM_NAME}"; gsd_run() { node "$GSD_TOOLS" "$@"; }; else echo "ERROR: gsd-tools.cjs not found at $GSD_TOOLS and gsd-tools is not on PATH. Run: npx -y @opengsd/gsd-core@latest --claude --local" >&2; exit 1; fi
+gsd_run query config-ensure-section
+INIT=$(gsd_run query state.load)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 # `state.load` returns STATE frontmatter JSON from the SDK — it does not include `config_path`. Orchestrators may set `GSD_CONFIG_PATH` from init phase-op JSON; otherwise resolve the same path gsd-tools uses for flat vs active workstream (#2282).
 if [[ -z "${GSD_CONFIG_PATH:-}" ]]; then
@@ -39,6 +40,7 @@ Parse current values (default to `true` if not present):
 - `workflow.research` — spawn researcher during plan-phase
 - `workflow.plan_check` — spawn plan checker during plan-phase
 - `workflow.verifier` — spawn verifier during execute-phase
+- `plan_review.source_grounding` — verify plan symbols against live source during plan review (default: true if absent; set `plan_review.source_grounding_authority` to select the resolver adapter: `grep` (default), `intel`, `treesitter`, `lsp`, or `scip`)
 - `workflow.nyquist_validation` — validation architecture research during plan-phase (default: true if absent)
 - `workflow.pattern_mapper` — run gsd-pattern-mapper between research and planning (default: true if absent)
 - `workflow.ui_phase` — generate UI-SPEC.md design contracts for frontend phases (default: true if absent)
@@ -51,6 +53,7 @@ Parse current values (default to `true` if not present):
 - `commit_docs` — whether `.planning/` files are committed to git (default: true if absent)
 - `intel.enabled` — enable queryable codebase intelligence (/gsd-map-codebase --query) (default: false if absent)
 - `graphify.enabled` — enable project knowledge graph (/gsd-graphify) (default: false if absent)
+- `graphify.auto_update` — opt-in: auto-rebuild graph after main HEAD advances (#3347) (default: `false`)
 - `model_profile` — which model each agent uses (default: `balanced`)
 - `git.branching_strategy` — branching approach (default: `"none"`)
 - `workflow.use_worktrees` — whether parallel executor agents run in worktree isolation (default: `true`)
@@ -81,7 +84,7 @@ Use question with current values pre-selected. Questions are grouped into six vi
 Section layout:
 
 ### Planning
-Research, Plan Checker, Pattern Mapper, Nyquist, UI Phase, UI Gate, AI Phase
+Research, Plan Checker, Drift Guard, Pattern Mapper, Nyquist, UI Phase, UI Gate, AI Phase
 
 ### Execution
 Verifier, TDD Mode, Code Review, Code Review Depth _(conditional — only when code_review=on)_, UI Review
@@ -90,7 +93,7 @@ Verifier, TDD Mode, Code Review, Code Review Depth _(conditional — only when c
 Commit Docs, Skip Discuss, Worktrees
 
 ### Features
-Intel, Graphify
+Intel, Graphify, Graph auto-update _(conditional — only when graphify=on)_
 
 ### Model & Pipeline
 Model Profile, Auto-Advance, Branching
@@ -100,19 +103,53 @@ Context Warnings, Research Qs
 
 **Conditional visibility — code_review_depth:** This question is shown only when the user's chosen `code_review` value (after they answer that question, or the pre-selected value if unchanged) is on. If `code_review` is off, omit the `code_review_depth` question from the question block and preserve the existing `workflow.code_review_depth` value in config (do not overwrite). Implementation: ask the Model + Planning + Execution-up-to-Code-Review questions first; if `code_review=on`, include `code_review_depth` in the same batch; otherwise skip it. Conceptually this is a one-branch split on the `code_review` answer.
 
+**Conditional visibility — graphify.auto_update:** This question is shown only when the user's chosen `graphify.enabled` value is on. If `graphify.enabled` is off, omit the `graphify.auto_update` question and preserve the existing `graphify.auto_update` value in config (do not overwrite). Implementation: ask Graphify first; only ask Graph auto-update when Graphify is enabled.
+
 ```
+// Model profile is selected via a two-question split because question enforces a
+// hard 4-option cap and there are 5 valid profiles (quality, balanced, budget, adaptive,
+// inherit). Q1 routes between adaptive/standard-tier/inherit; Q2 (shown only when the
+// user chose "Standard tier" in Q1) picks among the three standard profiles. (#3784)
 question([
   {
     question: "Which model profile for agents?",
     header: "Model",
     multiSelect: false,
     options: [
-      { label: "Quality", description: "Opus everywhere except verification (highest cost) — the agent only" },
-      { label: "Balanced (Recommended)", description: "Opus for planning, Sonnet for research/execution/verification — the agent only" },
-      { label: "Budget", description: "Sonnet for writing, Haiku for research/verification (lowest cost) — the agent only" },
+      { label: "Adaptive (Recommended)", description: "Role-based cost optimization: heavy roles use the highest-tier model available on the active runtime, light roles use the cheapest. Best balance of quality and cost across all supported runtimes (the agent, Codex, Gemini, OpenRouter, local)." },
+      { label: "Standard tier…", description: "Choose Quality, Balanced, or Budget — flat tier applied to all agents" },
       { label: "Inherit", description: "Use current session model for all agents (required for non-the agent runtimes: Codex, Gemini CLI, OpenRouter, local models)" }
     ]
-  },
+  }
+])
+
+**Conditional visibility — model_profile (Q2):**
+  Only ask this question when Q1's answer is "Standard tier…".
+  If Q1 = "Adaptive (Recommended)" → write model_profile=adaptive and SKIP Q2.
+  If Q1 = "Inherit"                → write model_profile=inherit and SKIP Q2.
+  If user cancels Q2 after picking "Standard tier…" → leave existing model_profile value unchanged (mirror code_review_depth's cancellation rule).
+
+question([
+  {
+    question: "Which standard profile? (Quality / Balanced / Budget)",
+    header: "Model Tier",
+    multiSelect: false,
+    options: [
+      { label: "Quality", description: "Opus everywhere except verification (highest cost) — the agent only" },
+      { label: "Balanced", description: "Opus for planning, Sonnet for research/execution/verification — the agent only" },
+      { label: "Budget", description: "Sonnet for writing, Haiku for research/verification (lowest cost) — the agent only" }
+    ]
+  }
+])
+
+// Map UI choices → config values:
+//   Q1 "Adaptive (Recommended)" → model_profile = "adaptive"
+//   Q1 "Inherit"                → model_profile = "inherit"
+//   Q1 "Standard tier…" + Q2 "Quality"   → model_profile = "quality"
+//   Q1 "Standard tier…" + Q2 "Balanced"  → model_profile = "balanced"
+//   Q1 "Standard tier…" + Q2 "Budget"    → model_profile = "budget"
+
+question([
   {
     question: "Spawn Plan Researcher? (researches domain before planning)",
     header: "Research",
@@ -138,6 +175,15 @@ question([
     options: [
       { label: "Yes", description: "Verify must-haves after execution" },
       { label: "No", description: "Skip post-execution verification" }
+    ]
+  },
+  {
+    question: "Enable Plan Drift Guard? (verifies that symbols cited in plans exist in source at review time)",
+    header: "Drift Guard",
+    multiSelect: false,
+    options: [
+      { label: "Yes (Recommended)", description: "Resolve symbol references (decorators, classes, functions, CLI flags) against live source — catches hallucinated names before execution. Authority controlled by plan_review.source_grounding_authority (default: grep)." },
+      { label: "No", description: "Skip symbol grounding. Plan review proceeds without source verification." }
     ]
   },
   {
@@ -317,6 +363,15 @@ question([
       { label: "No (Recommended)", description: "Skip knowledge graph. Use when dependency graphs are not needed." },
       { label: "Yes", description: "Enable /gsd-graphify commands. Builds and queries a project knowledge graph." }
     ]
+  },
+  {
+    question: "Auto-rebuild graph after main HEAD advances? (only effective if Graphify is enabled — #3347)",
+    header: "Graph auto-update",
+    multiSelect: false,
+    options: [
+      { label: "No (Recommended)", description: "Manual /gsd-graphify build only. Conservative default — opt in if you want fresh context on every /gsd-quick or /gsd-plan-phase." },
+      { label: "Yes", description: "Auto-rebuild the graph in a detached background process after git commit/merge/pull/rebase --continue/cherry-pick on the default branch. Hook returns instantly; rebuild runs out-of-band. No-op if Graphify is disabled." }
+    ]
   }
 ])
 ```
@@ -350,11 +405,15 @@ Merge new settings into existing config.json:
     "skip_discuss": true/false,
     "use_worktrees": true/false
   },
+  "plan_review": {
+    "source_grounding": true/false
+  },
   "intel": {
     "enabled": true/false
   },
   "graphify": {
-    "enabled": true/false
+    "enabled": true/false,
+    "auto_update": true/false
   },
   "git": {
     "branching_strategy": "none" | "phase" | "milestone",
@@ -368,7 +427,7 @@ Merge new settings into existing config.json:
 }
 ```
 
-**Safe merge:** Apply each chosen value via `gsd-sdk query config-set <key.path> <value>` so unrelated keys are never clobbered. `code_review_depth` is written only if the code_review question was answered `on`; otherwise leave the existing value in place.
+**Safe merge:** Apply each chosen value via `gsd-tools.cjs query config-set <key.path> <value>` so unrelated keys are never clobbered. `code_review_depth` is written only if the code_review question was answered `on`; otherwise leave the existing value in place. `model_profile` is written on Q1 "Adaptive (Recommended)" (→ adaptive) or Q1 "Inherit" (→ inherit) immediately; for Q1 "Standard tier…", `model_profile` is written from Q2's answer. If Q1 = "Standard tier…" but Q2 is cancelled, leave the existing `model_profile` value unchanged — do not write any new value.
 
 Write updated config to `$GSD_CONFIG_PATH` (the workstream-aware path resolved in `ensure_and_load_config`). Never hardcode `.planning/config.json` — workstream installs route to `.planning/workstreams/<slug>/config.json`.
 </step>
@@ -422,11 +481,15 @@ Write `~/.gsd/defaults.json` with:
     "ui_review": <current>,
     "skip_discuss": <current>
   },
+  "plan_review": {
+    "source_grounding": <current>
+  },
   "intel": {
     "enabled": <current>
   },
   "graphify": {
-    "enabled": <current>
+    "enabled": <current>,
+    "auto_update": <current>
   }
 }
 ```
@@ -442,13 +505,14 @@ Display:
 
 | Setting              | Value |
 |----------------------|-------|
-| Model Profile        | {quality/balanced/budget/inherit} |
+| Model Profile        | {quality/balanced/budget/adaptive/inherit} |
 | Plan Researcher      | {On/Off} |
 | Plan Checker         | {On/Off} |
 | Pattern Mapper       | {On/Off} |
 | Execution Verifier   | {On/Off} |
 | TDD Mode             | {On/Off} |
 | Code Review          | {On/Off} |
+| Plan Drift Guard     | {On/Off} |
 | Code Review Depth    | {quick/standard/deep} |
 | UI Review            | {On/Off} |
 | Commit Docs          | {On/Off} |
@@ -481,7 +545,7 @@ Quick commands:
 
 <success_criteria>
 - [ ] Current config read
-- [ ] User presented with 23 settings (profile + workflow toggles + features + git branching + git tagging + ctx warnings), grouped into six sections: Planning, Execution, Docs & Output, Features, Model & Pipeline, Misc. `code_review_depth` is conditional on `code_review=on`.
+- [ ] User presented with 24 settings (profile + workflow toggles + features + git branching + git tagging + ctx warnings), grouped into six sections: Planning, Execution, Docs & Output, Features, Model & Pipeline, Misc. `code_review_depth` is conditional on `code_review=on`. Model profile uses a two-question split (Q1: Adaptive / Standard tier / Inherit; Q2: Quality / Balanced / Budget — only when Standard tier chosen) to stay within the 4-option question cap while exposing all 5 valid profiles (#3784). Drift Guard (`plan_review.source_grounding`) is in the Planning section.
 - [ ] Config updated with model_profile, workflow, and git sections
 - [ ] User offered to save as global defaults (~/.gsd/defaults.json)
 - [ ] Changes confirmed to user

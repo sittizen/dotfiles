@@ -66,7 +66,7 @@ Before executing, discover project context:
 Load execution context:
 
 ```bash
-INIT=$(gsd-sdk query init.execute-phase "${PHASE}")
+INIT=$(gsd-tools query init.execute-phase "${PHASE}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -74,10 +74,8 @@ Extract from init JSON: `executor_model`, `commit_docs`, `sub_repos`, `phase_dir
 
 Also load planning state (position, decisions, blockers) via the SDK — **use `node` to invoke the CLI** (not `npx`):
 ```bash
-gsd-sdk query state.load 2>/dev/null
+gsd-tools query state.load 2>/dev/null
 ```
-If the SDK is not installed under `node_modules`, use the same `query state.load` argv with your local `gsd-sdk` CLI on `PATH`.
-
 If STATE.md missing but .planning/ exists: offer to reconstruct or continue without.
 If .planning/ missing: Error — project not initialized.
 </step>
@@ -266,8 +264,8 @@ Do NOT continue reading. Analysis without action is a stuck signal.
 Check if auto mode is active at executor start (chain flag or user preference):
 
 ```bash
-AUTO_CHAIN=$(gsd-sdk query config-get workflow._auto_chain_active 2>/dev/null || echo "false")
-AUTO_CFG=$(gsd-sdk query config-get workflow.auto_advance 2>/dev/null || echo "false")
+AUTO_CHAIN=$(gsd-tools query config-get workflow._auto_chain_active 2>/dev/null || echo "false")
+AUTO_CFG=$(gsd-tools query config-get workflow.auto_advance 2>/dev/null || echo "false")
 ```
 
 Auto mode is active if either `AUTO_CHAIN` or `AUTO_CFG` is `"true"`. Store the result for checkpoint handling below.
@@ -392,7 +390,7 @@ If RED or GREEN gate commits are missing, add a warning to SUMMARY.md under a `#
 **Behavior-Adding Task detection** (the gate only fires when this predicate returns true): apply via the centralized verb instead of inlining the three checks:
 
 ```bash
-IS_BEHAVIOR_ADDING=$(gsd-sdk query task.is-behavior-adding "$TASK_FILE" --pick is_behavior_adding)
+IS_BEHAVIOR_ADDING=$(gsd-tools query task.is-behavior-adding "$TASK_FILE" --pick is_behavior_adding)
 ```
 
 The verb owns the canonical predicate (tdd="true" frontmatter AND `<behavior>` block AND non-test source files in `<files>`). Pure doc-only / config-only / test-only tasks return `false` and are exempt. Full result also exposes per-check breakdown (`checks.tdd_true`, `checks.has_behavior_block`, `checks.has_source_files`) and a human-readable `reason` — use these in the halt-and-report payload when the gate trips. See `references/execute-mvp-tdd.md` for halt protocol.
@@ -492,7 +490,7 @@ git add src/types/user.ts
 
 **If `sub_repos` is configured (non-empty array from init context):** Use `commit-to-subrepo` to route files to their correct sub-repo:
 ```bash
-gsd-sdk query commit-to-subrepo "{type}({phase}-{plan}): {concise task description}" --files file1 file2 ...
+gsd-tools query commit-to-subrepo "{type}({phase}-{plan}): {concise task description}" --files file1 file2 ...
 ```
 Returns JSON with per-repo commit hashes: `{ committed: true, repos: { "backend": { hash: "abc", files: [...] }, ... } }`. Record all hashes for SUMMARY.
 
@@ -652,36 +650,36 @@ Do NOT skip. Do NOT proceed to state updates if self-check fails.
 </self_check>
 
 <state_updates>
-After SUMMARY.md, update STATE.md using `gsd-sdk query` state handlers (positional args; see `sdk/src/query/QUERY-HANDLERS.md`):
+After SUMMARY.md, update STATE.md using `gsd-tools query` state handlers (positional args; see `sdk/src/query/QUERY-HANDLERS.md`):
 
 ```bash
 # Advance plan counter (handles edge cases automatically)
-gsd-sdk query state.advance-plan
+gsd-tools query state.advance-plan
 
 # Recalculate progress bar from disk state
-gsd-sdk query state.update-progress
+gsd-tools query state.update-progress
 
 # Record execution metrics (phase, plan, duration, tasks, files)
-gsd-sdk query state.record-metric \
+gsd-tools query state.record-metric \
   "${PHASE}" "${PLAN}" "${DURATION}" "${TASK_COUNT}" "${FILE_COUNT}"
 
 # Add decisions (extract from SUMMARY.md key-decisions)
 for decision in "${DECISIONS[@]}"; do
-  gsd-sdk query state.add-decision "${decision}"
+  gsd-tools query state.add-decision "${decision}"
 done
 
 # Update session info (timestamp, stopped-at, resume-file)
-gsd-sdk query state.record-session \
+gsd-tools query state.record-session \
   "" "Completed ${PHASE}-${PLAN}-PLAN.md" "None"
 ```
 
 ```bash
 # Update ROADMAP.md progress for this phase (plan counts, status)
-gsd-sdk query roadmap.update-plan-progress "${PHASE_NUMBER}"
+gsd-tools query roadmap.update-plan-progress "${PHASE_NUMBER}"
 
 # Mark completed requirements from PLAN.md frontmatter
 # Extract the `requirements` array from the plan's frontmatter, then mark each complete
-gsd-sdk query requirements.mark-complete ${REQ_IDS}
+gsd-tools query requirements.mark-complete ${REQ_IDS}
 ```
 
 **Requirement IDs:** Extract from the PLAN.md frontmatter `requirements:` field (e.g., `requirements: [AUTH-01, AUTH-02]`). Pass all IDs to `requirements mark-complete`. If the plan has no requirements field, skip this step.
@@ -699,17 +697,39 @@ gsd-sdk query requirements.mark-complete ${REQ_IDS}
 
 **For blockers found during execution:**
 ```bash
-gsd-sdk query state.add-blocker "Blocker description"
+gsd-tools query state.add-blocker "Blocker description"
 ```
 </state_updates>
 
 <final_commit>
 ```bash
-gsd-sdk query commit "docs({phase}-{plan}): complete [plan-name] plan" --files \
+gsd-tools query commit "docs({phase}-{plan}): complete [plan-name] plan" --files \
   .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md .planning/STATE.md .planning/ROADMAP.md .planning/REQUIREMENTS.md
 ```
 
 Separate from per-task commits — captures execution results only.
+
+**Handling the SDK return envelope (#3678):** `gsd-tools query commit` returns
+one of three shapes:
+
+- `{committed: true, hash, reason: 'committed'}` — commit succeeded; record
+  the hash in the completion format.
+- `{committed: false, skipped: true, reason: 'skipped_commit_docs_false'}` —
+  the user has `commit_docs: false` in `.planning/config.json`. **This is an
+  intentional success path.** Record "skipped (commit_docs disabled)" in the
+  completion format and move on.
+- `{committed: false, skipped: true, reason: 'skipped_gitignored'}` —
+  `.planning/` is gitignored in the user's project. **Also an intentional
+  success path.** Record "skipped (.planning gitignored)" and move on.
+- `{committed: false, reason: 'nothing_to_commit' | 'commit_failed', ...}` —
+  no-op / genuine failure; surface in the completion notes.
+
+**Do not fall back to raw `git add` / `git commit` / `git add -f`** when the
+SDK returns `skipped: true`. The SDK's skip is the user's deliberate choice
+to keep `.planning/` files out of git history. Force-staging gitignored
+content via `git add -f .planning/...` is forbidden — that bug is exactly
+the regression #3678 reported, where the agent leaks `.planning/` artifacts
+into the user's project history.
 </final_commit>
 
 <completion_format>
@@ -740,6 +760,6 @@ Plan execution complete when:
 - [ ] SUMMARY.md created with substantive content
 - [ ] STATE.md updated (position, decisions, issues, session)
 - [ ] ROADMAP.md updated with plan progress (via `roadmap update-plan-progress`)
-- [ ] Final metadata commit made (includes SUMMARY.md, STATE.md, ROADMAP.md)
+- [ ] Final metadata commit made (includes SUMMARY.md, STATE.md, ROADMAP.md), or SDK returned an intentional skip (`skipped_commit_docs_false` / `skipped_gitignored`) — record "skipped (<reason>)" in completion notes
 - [ ] Completion format returned to orchestrator
 </success_criteria>

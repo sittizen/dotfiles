@@ -13,7 +13,7 @@ Parse the command arguments:
 - First argument: integer phase number to insert after
 - Remaining arguments: phase description
 
-Example: `/gsd-insert-phase 72 Fix critical auth bug`
+Example: `/gsd-phase --insert 72 Fix critical auth bug`
 -> after = 72
 -> description = "Fix critical auth bug"
 
@@ -21,8 +21,8 @@ If arguments missing:
 
 ```
 ERROR: Both phase number and description required
-Usage: /gsd-insert-phase <after> <description>
-Example: /gsd-insert-phase 72 Fix critical auth bug
+Usage: /gsd-phase --insert <after> <description>
+Example: /gsd-phase --insert 72 Fix critical auth bug
 ```
 
 Exit.
@@ -34,7 +34,8 @@ Validate first argument is an integer.
 Load phase operation context:
 
 ```bash
-INIT=$(gsd-sdk query init.phase-op "${after_phase}")
+_GSD_SHIM_NAME="gsd-tools.cjs"; _GSD_RUNTIME_ROOT="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"; GSD_TOOLS="${_GSD_RUNTIME_ROOT}/get-shit-done/bin/${_GSD_SHIM_NAME}"; if [ -f "$GSD_TOOLS" ]; then gsd_run() { node "$GSD_TOOLS" "$@"; }; elif [ -f "${_GSD_RUNTIME_ROOT}/.claude/get-shit-done/bin/${_GSD_SHIM_NAME}" ]; then GSD_TOOLS="${_GSD_RUNTIME_ROOT}/.claude/get-shit-done/bin/${_GSD_SHIM_NAME}"; gsd_run() { node "$GSD_TOOLS" "$@"; }; elif command -v gsd-tools >/dev/null 2>&1; then GSD_TOOLS="$(command -v gsd-tools)"; gsd_run() { "$GSD_TOOLS" "$@"; }; elif [ -f "/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/bin/${_GSD_SHIM_NAME}" ]; then GSD_TOOLS="/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/bin/${_GSD_SHIM_NAME}"; gsd_run() { node "$GSD_TOOLS" "$@"; }; else echo "ERROR: gsd-tools.cjs not found at $GSD_TOOLS and gsd-tools is not on PATH. Run: npx -y @opengsd/gsd-core@latest --claude --local" >&2; exit 1; fi
+INIT=$(gsd_run query init.phase-op "${after_phase}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -46,10 +47,10 @@ Exit.
 </step>
 
 <step name="insert_phase">
-**Delegate the phase insertion to `gsd-sdk query phase.insert`:**
+**Delegate the phase insertion to `gsd-tools.cjs query phase.insert`:**
 
 ```bash
-RESULT=$(gsd-sdk query phase.insert "${after_phase}" "${description}")
+RESULT=$(gsd_run query phase.insert "${after_phase}" "${description}")
 ```
 
 The CLI handles:
@@ -71,7 +72,7 @@ blocks direct STATE.md writes):
    `{decimal_phase}`:
 
    ```bash
-   gsd-sdk query state.patch '{"Current Phase":"{decimal_phase}","Next recommended run":"/gsd-plan-phase {decimal_phase}"}'
+   gsd_run query state.patch '{"Current Phase":"{decimal_phase}","Next recommended run":"/gsd-plan-phase {decimal_phase}"}'
    ```
 
    (Adjust field names to whatever pointers STATE.md exposes — the handler
@@ -82,7 +83,7 @@ blocks direct STATE.md writes):
    and dedupes identical entries:
 
    ```bash
-   gsd-sdk query state.add-roadmap-evolution \
+   gsd_run query state.add-roadmap-evolution \
      --phase {decimal_phase} \
      --action inserted \
      --after {after_phase} \
@@ -142,10 +143,10 @@ Project state updated: .planning/STATE.md
 <success_criteria>
 Phase insertion is complete when:
 
-- [ ] `gsd-sdk query phase.insert` executed successfully
+- [ ] `gsd-tools.cjs query phase.insert` executed successfully
 - [ ] Phase directory created
 - [ ] Roadmap updated with new phase entry (includes "(INSERTED)" marker)
-- [ ] `gsd-sdk query state.add-roadmap-evolution ...` returned `{ added: true }` or `{ added: false, reason: "duplicate" }`
-- [ ] `gsd-sdk query state.patch` returned matched next-phase pointer field(s)
+- [ ] `gsd-tools.cjs query state.add-roadmap-evolution ...` returned `{ added: true }` or `{ added: false, reason: "duplicate" }`
+- [ ] `gsd-tools.cjs query state.patch` returned matched next-phase pointer field(s)
 - [ ] User informed of next steps and dependency implications
 </success_criteria>

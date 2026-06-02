@@ -20,7 +20,8 @@ Instantly restore full project context so "Where were we?" has an immediate, com
 Load all context in one call:
 
 ```bash
-INIT=$(gsd-sdk query init.resume)
+_GSD_SHIM_NAME="gsd-tools.cjs"; _GSD_RUNTIME_ROOT="${RUNTIME_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"; GSD_TOOLS="${_GSD_RUNTIME_ROOT}/get-shit-done/bin/${_GSD_SHIM_NAME}"; if [ -f "$GSD_TOOLS" ]; then gsd_run() { node "$GSD_TOOLS" "$@"; }; elif [ -f "${_GSD_RUNTIME_ROOT}/.claude/get-shit-done/bin/${_GSD_SHIM_NAME}" ]; then GSD_TOOLS="${_GSD_RUNTIME_ROOT}/.claude/get-shit-done/bin/${_GSD_SHIM_NAME}"; gsd_run() { node "$GSD_TOOLS" "$@"; }; elif command -v gsd-tools >/dev/null 2>&1; then GSD_TOOLS="$(command -v gsd-tools)"; gsd_run() { "$GSD_TOOLS" "$@"; }; elif [ -f "/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/bin/${_GSD_SHIM_NAME}" ]; then GSD_TOOLS="/home/simone.cittadini@gruppomol.lcl/.config/opencode/get-shit-done/bin/${_GSD_SHIM_NAME}"; gsd_run() { node "$GSD_TOOLS" "$@"; }; else echo "ERROR: gsd-tools.cjs not found at $GSD_TOOLS and gsd-tools is not on PATH. Run: npx -y @opengsd/gsd-core@latest --claude --local" >&2; exit 1; fi
+INIT=$(gsd_run query init.resume)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -66,13 +67,15 @@ Look for incomplete work that needs attention:
 # Check for structured handoff (preferred — machine-readable)
 cat .planning/HANDOFF.json 2>/dev/null || true
 
-# Check for continue-here files (phase + non-phase + legacy fallback)
-ls .planning/phases/*/.continue-here*.md \
-   .planning/spikes/*/.continue-here*.md \
-   .planning/sketches/*/.continue-here*.md \
-   .planning/deliberations/.continue-here*.md \
-   .planning/.continue-here*.md \
-   .continue-here*.md 2>/dev/null || true
+# Check for continue-here files (phase + non-phase + legacy fallback).
+# Use `find` rather than a chained `ls` of bare globs: under zsh's default
+# NOMATCH option (macOS default shell), a single non-matching glob aborts
+# the entire command during word-expansion — silently dropping every
+# pattern after the first miss, including `.planning/.continue-here*.md`.
+# `find` does not use shell glob expansion and tolerates absent
+# directories on both bash and zsh.
+find .planning -maxdepth 3 -name '.continue-here*.md' -print 2>/dev/null || true
+find . -maxdepth 1 -name '.continue-here*.md' -print 2>/dev/null || true
 
 # Check for plans without summaries (incomplete execution)
 for plan in .planning/phases/*/*-PLAN.md; do

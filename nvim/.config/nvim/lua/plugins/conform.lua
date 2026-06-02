@@ -9,6 +9,8 @@ return {
 				go = { "gofmt" },
 				json = { "jq" },
 				jsonc = { "jq" },
+				typescript = { "prettier" },
+				typescriptreact = { "prettier" },
 			},
 		})
 		require("conform").formatters.ruff = {

@@ -3,8 +3,8 @@
   "appliedMigrations": [
     {
       "id": "2026-05-11-first-time-baseline-scan",
-      "appliedAt": "2026-05-22T06:07:36.453Z",
-      "journal": "gsd-migration-journal/2026-05-22T06-07-36-453Z-147cd3405f722aa5.json",
+      "appliedAt": "2026-06-02T16:19:13.619Z",
+      "journal": "gsd-migration-journal/2026-06-02T16-19-13-619Z-e2f49a7a75835256.json",
       "checksum": "sha256:34608ea4e2f4e1c53b069604892860e603600d8573cc6a5584e4194044b48e67"
     }
   ]

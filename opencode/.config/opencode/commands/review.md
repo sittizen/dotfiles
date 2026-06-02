@@ -3,7 +3,8 @@ description: Review recent changes
 agent: review
 ---
 
-Recent git commits:
-!`git log --oneline -10`
+Review the following changes and suggest improvements.
+```bash
+git log --oneline -$1
+```
 
-Review these chages and suggest improvements.
