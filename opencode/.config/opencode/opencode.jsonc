@@ -3,6 +3,9 @@
   "autoupdate": true,
   "model": "opencode/deepseek-v4-flash-free",
   "small_model": "opencode/minimax-m2.5-free",
+  "experimental": {
+    "openTelemetry": false
+  },
   "provider": {
     "leollama": {
       "npm": "@ai-sdk/openai-compatible",
@@ -26,7 +29,9 @@
     "~/.config/opencode/instructions/caveman.md",
     "https://httpd.pycc.gmolapps.lcl/instructions/AGENTS_root.md"
   ],
-  "plugin": [],
+  "plugin": [
+    "plugins/ArgoPlugin.ts"
+  ],
   "share": "disabled",
   "formatter": false,
   "mcp": {
