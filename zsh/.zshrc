@@ -106,6 +106,7 @@ export GITLAB_URL=https://gitlab.gruppomol.lcl/
 #LANGFUSE_AUTH=$(echo -n "$LANGFUSE_PUBLIC_KEY:$LANGFUSE_SECRET_KEY" | base64 -w0)
 #export OTEL_EXPORTER_OTLP_HEADERS="Authorization=Basic ${LANGFUSE_AUTH},x-langfuse-ingestion-version=4"
 #export OTEL_RESOURCE_ATTRIBUTES=team.id=platform,department=engineering
+alias lit="/mnt/media/data/home/sc/node_modules/.bin/lit"
 
 # functions
 v() {
@@ -172,3 +173,6 @@ eval "$(zoxide init zsh)"
 
 # opencode
 export PATH=/home/simone.cittadini@gruppomol.lcl/.opencode/bin:$PATH
+
+# opencode
+export PATH=/home/sc/.opencode/bin:$PATH
