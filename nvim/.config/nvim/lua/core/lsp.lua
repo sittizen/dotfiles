@@ -3,6 +3,7 @@ vim.lsp.enable({
 	"pyright",
 	"gopls",
 	"bashls",
+	-- "ty",
 })
 
 vim.diagnostic.config({

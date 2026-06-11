@@ -59,6 +59,9 @@ return {
 			client.settings.python.analysis = vim.tbl_deep_extend("force", client.settings.python.analysis or {}, {
 				extraPaths = {
 					venv_path .. "/.venv/lib/python3.10/site-packages/",
+					venv_path .. "/.venv/lib/python3.11/site-packages/",
+					venv_path .. "/.venv/lib/python3.12/site-packages/",
+					venv_path .. "/.venv/lib/python3.13/site-packages/",
 					venv_path .. "/.venv/lib/python3.14/site-packages/",
 				},
 			})
