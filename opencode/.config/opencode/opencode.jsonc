@@ -47,10 +47,12 @@
   "permission": {
     "ralph-tui-prd": "allow",
     "read": {
-      "~/.config/opencode/get-shit-done/*": "allow"
+      "~/.config/opencode/get-shit-done/*": "allow",
+      "~/.config/opencode/gsd-core/*": "allow"
     },
     "external_directory": {
-      "~/.config/opencode/get-shit-done/*": "allow"
+      "~/.config/opencode/get-shit-done/*": "allow",
+      "~/.config/opencode/gsd-core/*": "allow"
     }
   },
   "watcher": {
