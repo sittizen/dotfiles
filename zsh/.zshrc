@@ -128,10 +128,9 @@ rs() {
     export UV_INDEX_PYPIMOL_GITLAB_PASSWORD=${PYPI_VALS[2]}
     export UV_INDEX_PYPIMOL_PASSWORD=${PYPI_VALS[2]}
 
-    ACCTS_VALS=(`vault read -format=json kv/loc/simone.cittadini/zsh | jq -r '.data.ctx7, .data.gtranslate, .data.glam'`)
+    ACCTS_VALS=(`vault read -format=json kv/loc/simone.cittadini/zsh | jq -r '.data.ctx7, .data.glam'`)
     export CONTEXT7_API_KEY=${ACCTS_VALS[1]}
-    export GOOGLE_TRANSLATE_API_KEY=${ACCTS_VALS[2]}
-    export GITLAB_TOKEN=${ACCTS_VALS[3]}
+    export GITLAB_TOKEN=${ACCTS_VALS[2]}
   fi
 }
 
