@@ -28,9 +28,6 @@
     "~/.config/opencode/instructions/caveman.md",
     "https://httpd.pycc.gmolapps.lcl/instructions/AGENTS_root.md"
   ],
-  "plugin": [
-    "plugins/ArgoPlugin.ts"
-  ],
   "share": "disabled",
   "formatter": false,
   "mcp": {
