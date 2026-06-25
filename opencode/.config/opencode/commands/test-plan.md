@@ -1,47 +1,37 @@
 ---
-description: Create a TestPlan file describing a complete suite of unit tests for a class or function
+description: Create a TestPlan file describing a complete suite of unit tests for a new requirement
 agent: build
 model: github-copilot/gpt-5-mini
 ---
 
-Look for a function or class named $2 in the file $1
-You are tasked with writing a list of unit test specifications for the code under scrutiny; strive in finding ways in which the code breaks in unmanaged ways.
+You are tasked with writing a list of test **specifications** for the behaviour described by the user.
+**never** change the code under test, **never** write actual tests.
+Behaviour is mainly implemented by the code exposed by the diffs of the last $1 git commits; strive in finding ways in which the code can break in unmanaged ways.
 
-## Assumptions
-- **NEVER** change the code under test, **NEVER** write actual tests.
-- Class or function under scrutiny is part of a whole, check the surrounding code to understand where it is called, what input is to be expected, and what output is to be produced.
-- Do not write more than 7 tests, make just one test with the "happy path" and have the others covering unexpected and fringe inputs and paths.
-- **have no interest in expected inputs and simple paths**, it's ok to suppose the code does not contain trivial bugs.
+## Follow this intent
+- Code under scrutiny is part of a whole, check the surroundings to understand how it fits in the whole.
+- Test the behaviour of which code is a part, not the single classes and functions.
+- Do not write more than 6 tests, make just one test with the "happy path", then have the others expose weak spots and incoherences in the code under scrutiny.
+- **have no interest in expected inputs and simple paths**, trust the code to not contain trivial bugs.
 
 ## TestPlan workflow
-1. Read the code under scrutiny, find wich code in the rest of the project uses it.
+1. Read the code under scrutiny, find wich code in the rest of the project uses it
 2. Use gathered information about the code under scrutiny to come up with a suite of tests
-3. use bash to invoke "gm x_test_plan_path $1 $2", it returns the TestPlan markdown file, where you will write the plan
-```bash
-gm x_test_plan_path src/project/file_name.py class MyClass 
-# expected output, path of the plan file:
-tests/project/file_name/TestPlan_my_class.md
-```
-3. Write the list of tests into the TestsPlan file following this template:
-- start with an header detailing the code object $2 from file $1 under scrutiny, followed by a short description of the understood function and what will be stressed:
-    - # TestPlan for "$2" @ "$1"
-    - Description of $2 function inside the code and aim of the tests... 
-
-- add paths of files where the code object under scrutiny is used:
-    - ## used in:
-    - list of paths where the code object is used
-
+3. [todo where to write the plan]
+4. Write the list of tests into the TestsPlan file following this template:
+- start with a brief header detailing a short description of the behaviour under test, followed by the code commits under scrutiny
+- add paths of files where the code under scrutiny is used
 - include for each test in your plan an entry like:
     - ## TST-001: small descriptive title
-    - - [ ] Status: TODO  
+    - - [ ] Status: TODO
     - Plain test description on the next line
     - "**required fixtures**" followed by list bullets "- ..." for the list of fixtures to setup at start of test code
     - "**required asserts**" followed by checklist bullets "- ..." for the list of asserts to check at end of test code
 
 EXAMPLE :
 ```TestsPlan.md
-# TestPlan for "def create_user" @ src/auth/users.py
-Creates a user into the database, after validation of the passed personal data. Test invalid data and database errors leave the system in a coherent state.
+# TestPlan for user creation @ckdah, @asdl, @aldfh
+Creates a user into the database, after validation of the passed personal data. Invalid data and database errors must leave the system in a coherent state.
 
 ## used in:
     - src/api/auth.py

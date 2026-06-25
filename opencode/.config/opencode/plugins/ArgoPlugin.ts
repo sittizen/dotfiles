@@ -51,12 +51,12 @@ type SessionMessages = {
 
 const getUserId = (): string => {
   try {
-    const email = execSync("git config user.email 2>/dev/null", {
-      encoding: "utf-8",
-    }).trim();
-    if (email) return email.split("@")[0] ?? email;
+    const cfg = JSON.parse(
+      readFileSync(join(homedir(), ".config", "argo", "config.json"), "utf-8"),
+    );
+    if (typeof cfg.user === "string" && cfg.user.length > 0) return cfg.user;
   } catch {
-    // not in git project
+    // ignore — fall through to whoami
   }
   try {
     return execSync("whoami", { encoding: "utf-8" }).trim();
@@ -92,6 +92,8 @@ const getProjectId = (): string => {
 };
 
 let team = "unknown";
+let userId: string;
+let projectId: string;
 
 const collectedSessions: SessionMessages[] = [];
 
@@ -224,11 +226,11 @@ const getSessionMetadata = (entry: SessionMessages) => {
       messageCount: entry.messages.length,
     },
     resourceAttributes: {
-      user: getUserId(),
+      user: userId,
       team,
       organization: "Moltiply",
-      "pycc.project": getProjectId(),
-      "pycc.commits": commits,
+      project: projectId,
+      commits: commits,
       "service.name": "opencode",
       "service.version": entry.session.version,
       "gen_ai.system": "opencode",
@@ -294,13 +296,13 @@ const createLangfuseSession = async (
       id: stableId(`trace:${entry.session.id}`),
       name: entry.session.title || entry.session.slug,
       sessionId,
-      userId: getUserId(),
+      userId,
       timestamp: toDate(entry.session.time.created),
       version: entry.session.version,
       input: {}, // leave empty to save space, we are just interested in costs
       output: {}, // same
       metadata: getSessionMetadata(entry),
-      tags: [entry.session.agent, getUserId(), getProjectId()].filter(
+      tags: [entry.session.agent, userId, projectId].filter(
         (tag): tag is string => Boolean(tag),
       ),
     });
@@ -398,6 +400,7 @@ export const ArgoPlugin: Plugin = async ({ client }) => {
   // load valid config or exit
   let config: {
     team?: string;
+    user?: string;
     langfuse?: { secret_key?: string; public_key?: string; base_url?: string };
   } = {};
   try {
@@ -415,6 +418,8 @@ export const ArgoPlugin: Plugin = async ({ client }) => {
     typeof config.team === "string" && config.team.length > 0
       ? config.team
       : "unknown";
+  userId = getUserId();
+  projectId = getProjectId();
 
   const secretKey = config.langfuse?.secret_key;
   const publicKey = config.langfuse?.public_key;
@@ -434,8 +439,8 @@ export const ArgoPlugin: Plugin = async ({ client }) => {
     baseUrl,
     sdkIntegration: "opencode-argo-plugin",
   });
-  langfuse.on("error", (error) => {
-    console.error("[argo] failed to send langfuse telemetry", error);
+  langfuse.on("error", () => {
+    console.warn("[argo] langfuse server unreachable — telemetry degraded");
   });
 
   const hooks: Hooks = {
@@ -478,13 +483,25 @@ export const ArgoPlugin: Plugin = async ({ client }) => {
               }),
             );
 
-            await createLangfuseSession(langfuse, sessionEntries, sessionID);
+            try {
+              await createLangfuseSession(langfuse, sessionEntries, sessionID);
+            } catch {
+              console.warn(
+                "[argo] langfuse server unreachable — telemetry skipped",
+              );
+            }
           }
         }
       }
     },
     dispose: async () => {
-      await langfuse.shutdownAsync();
+      try {
+        await langfuse.shutdownAsync();
+      } catch {
+        console.warn(
+          "[argo] langfuse server unreachable during shutdown — ignored",
+        );
+      }
     },
   };
 
