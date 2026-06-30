@@ -79,6 +79,9 @@ https://github.com/junhoyeo/tokscale
 ## obsidian , note taking
 https://obsidian.md
 
+## dbx, db client
+https://github.com/t8y2/dbx
+
 ## mpv, cli media player
 https://mpv.io
 
