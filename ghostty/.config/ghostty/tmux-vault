@@ -1,0 +1,33 @@
+#!/bin/sh
+
+if [ -z "$VAULT_TOKEN" ] && tmux has-session 2>/dev/null; then
+  tmux_vault_token=$(tmux show-environment -g VAULT_TOKEN 2>/dev/null)
+  case "$tmux_vault_token" in
+    VAULT_TOKEN=*)
+      VAULT_TOKEN=${tmux_vault_token#VAULT_TOKEN=}
+      export VAULT_TOKEN
+      ;;
+  esac
+fi
+
+if [ "$(hostname)" = "leona" ]; then
+  export VAULT_ADDR="http://127.0.0.1:8200"
+  export VAULT_SKIP_VERIFY=true
+  if [ -z "$VAULT_TOKEN" ] && [ -r "$HOME/workspace/.uk" ]; then
+    VAULT_TOKEN=$(cat "$HOME/workspace/.uk")
+    export VAULT_TOKEN
+  fi
+else
+  export VAULT_ADDR="https://vault.pycc.gmolapps.lcl"
+  export ARGO_SERVER_URL="https://argo.pycc.gmolapps.lcl"
+  if [ -z "$VAULT_TOKEN" ]; then
+    VAULT_TOKEN=$(vault login -method=oidc -token-only 2>/dev/null)
+    export VAULT_TOKEN
+  fi
+fi
+
+if [ -n "$VAULT_TOKEN" ] && tmux has-session 2>/dev/null; then
+  tmux set-environment -g VAULT_TOKEN "$VAULT_TOKEN"
+fi
+
+exec tmux "$@"
