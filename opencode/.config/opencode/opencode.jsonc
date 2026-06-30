@@ -3,7 +3,7 @@
   "autoupdate": true,
   "model": "opencode/deepseek-v4-flash-free",
   //"model": "openrouter/deepseek/deepseek-v4-pro",
-  "small_model": "openrouter/moonshotai/kimi-k2.7-code",
+  //"small_model": "openrouter/moonshotai/kimi-k2.7-code",
   "experimental": {
     "openTelemetry": false
   },
