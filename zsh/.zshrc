@@ -68,7 +68,6 @@ else
 fi
 
 # aliases
-alias tm='tmux'
 alias l='exa -1 -l --classify --icons --color-scale --group-directories-first --no-permissions --no-user --no-time'
 alias lt='exa -1 -l --classify --icons --color-scale --tree --no-permissions --no-user'
 alias la='exa -1 -l --classify --icons --color-scale --all'
@@ -77,7 +76,6 @@ alias cat="batcat -p"
 alias vim='nvim'
 alias vi='nvim'
 alias n='nvim .'
-alias y='yazi'
 alias c='z'
 alias vv="vault token renew $VAULT_TOKEN"
 alias vu="nmcli connection up 'gate_v6'"
@@ -88,25 +86,13 @@ alias tmo="timew stop"
 alias tms="timew summary"
 alias oc="opencode"
 alias oca="opencode attach http://locahost:9998"
-alias rt="ralph-tui"
 alias am="alsamixer"
 alias marp="npx @marp-team/marp-cli@4.3.0"
-alias rp="uv run poe"
+alias lit="/mnt/media/data/home/sc/node_modules/.bin/lit"
 
 # clean exports
 export GITLAB_URL=https://gitlab.gruppomol.lcl/
 
-# TODO wrap these in vscode starter
-#export LANGFUSE_SECRET_KEY="sk-lf-5e654179-fe28-49b6-8f8f-06b61a36e592"
-#export LANGFUSE_PUBLIC_KEY="pk-lf-c1374b5d-d17e-4b99-8615-4aaa8b5f9725"
-#export LANGFUSE_BASE_URL="https://langfuse.aiml-test.gmolapps.lcl"
-#export OTEL_EXPORTER_OTLP_ENDPOINT="https://langfuse.aiml-test.gmolapps.lcl/api/public/otel"
-#export OTEL_EXPORTER_OTLP_TRACES_ENDPOINT="https://langfuse.aiml-test.gmolapps.lcl/api/public/otel/v1/traces"
-#export OTEL_EXPORTER_OTLP_PROTOCOL="http/json"
-#LANGFUSE_AUTH=$(echo -n "$LANGFUSE_PUBLIC_KEY:$LANGFUSE_SECRET_KEY" | base64 -w0)
-#export OTEL_EXPORTER_OTLP_HEADERS="Authorization=Basic ${LANGFUSE_AUTH},x-langfuse-ingestion-version=4"
-#export OTEL_RESOURCE_ATTRIBUTES=team.id=platform,department=engineering
-alias lit="/mnt/media/data/home/sc/node_modules/.bin/lit"
 
 # functions
 v() {
@@ -115,7 +101,14 @@ v() {
   else
     export VAULT_TOKEN=$(vault login -method=oidc -token-only 2>/dev/null)
   fi
+  if [[ -n "$TMUX" ]] && [[ -n "$VAULT_TOKEN" ]]; then
+    tmux set-environment -g VAULT_TOKEN "$VAULT_TOKEN"
+  fi
 }
+
+if [[ -z "$VAULT_TOKEN" ]] && [[ -o interactive ]]; then
+  v
+fi
 
 rs() {
   if [[ "$(hostname)" == "leona" ]]; then
