@@ -84,24 +84,57 @@ return {
 
 			dap.configurations.python = dap.configurations.python or {}
 
+			-- Remote attach to a debugpy server running inside a dev container.
+			-- Container must publish its debug port to the host (e.g. run.sh -P 5678),
+			-- so nvim connects through 127.0.0.1:<host_port>.
+			-- In the container run e.g.:
+			--   uv run python -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m pytest
+			-- Module roots: host project dir <-> /app (the bind mount via run.sh).
+			local remote_port = tonumber(vim.env.DEBUGPY_PORT) or 5678
+			local remote_host = vim.env.DEBUGPY_HOST or "127.0.0.1"
+			local remote_root = vim.env.DEBUGPY_REMOTE_ROOT or "/app"
+
 			table.insert(dap.configurations.python, {
 				type = "python",
 				request = "attach",
-				name = "Attach to debugpy in Docker",
-				connect = {
-					host = "192.168.1.32",
-					port = 5678,
-				},
-				pathMapping = {
-					{
-						localRoot = vim.fn.getcwd(),
-						remoteRoot = "/app",
-					},
+				name = "Attach remote debugpy (Docker)",
+				host = remote_host,
+				port = remote_port,
+				pathMappings = {
+					{ localRoot = vim.fn.getcwd(), remoteRoot = remote_root },
 				},
 				justMyCode = false,
+				showReturnValue = true,
 			})
 
-			dap_python.setup("uv")
+			-- Pick a sensible per-project python from the uv venv if present, so
+			-- launch-style configs (pytest/launch current file) work locally too.
+			local function resolve_python()
+				local candidates = {
+					vim.fn.getcwd() .. "/.venv/bin/python",
+					vim.env.VIRTUAL_ENV and (vim.env.VIRTUAL_ENV .. "/bin/python") or nil,
+					"python3",
+					"python",
+				}
+				for _, c in ipairs(candidates) do
+					if c and vim.fn.executable(c) == 1 then
+						return c
+					end
+				end
+				return "python3"
+			end
+			dap_python.setup(resolve_python())
+
+			-- launch (run current file) helper used when NOT attaching to a container
+			table.insert(dap.configurations.python, {
+				type = "python",
+				request = "launch",
+				name = "Launch current file (local venv)",
+				program = "${file}",
+				python = resolve_python(),
+				cwd = "${workspaceFolder}",
+				justMyCode = false,
+			})
 
 			vim.fn.sign_define("DapBreakpoint", {
 				text = "",
