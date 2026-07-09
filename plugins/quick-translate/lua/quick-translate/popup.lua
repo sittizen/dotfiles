@@ -293,8 +293,10 @@ function M.get_text()
     return ''
   end
 
-  -- For prompt buffer, the text is after any prompt prefix
-  return lines[1] or ''
+  if #lines > 0 and lines[#lines] == '' then
+    table.remove(lines)
+  end
+  return table.concat(lines, '\n')
 end
 
 --- Set the text content of the popup
@@ -314,7 +316,8 @@ function M.set_text(text)
     vim.api.nvim_set_option_value('modifiable', true, { buf = M.state.buf })
   end
 
-  vim.api.nvim_buf_set_lines(M.state.buf, 0, -1, false, { text })
+  local lines = vim.split(text, '\n', { plain = true })
+  vim.api.nvim_buf_set_lines(M.state.buf, 0, -1, false, lines)
 
   if not was_modifiable then
     vim.api.nvim_set_option_value('modifiable', false, { buf = M.state.buf })
