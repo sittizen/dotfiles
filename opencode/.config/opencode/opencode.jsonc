@@ -33,6 +33,11 @@
   "share": "disabled",
   "formatter": false,
   "mcp": {
+    "playwright": {
+      "type": "local",
+      "command": ["npx", "-y", "@playwright/mcp"],
+      "enabled": false
+    },
     "context7": {
       "type": "remote",
       "url": "https://mcp.context7.com/mcp",
