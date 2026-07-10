@@ -17,6 +17,18 @@ return {
 			},
 
 			{
+				"<leader>dw",
+				function()
+					vim.ui.input({ prompt = "Watch expression: " }, function(expr)
+						if expr and #expr > 0 then
+							require("dapui").elements.watches.add(expr)
+						end
+					end)
+				end,
+				desc = "Add watch",
+			},
+
+			{
 				"<leader>dc",
 				function()
 					require("dap").continue()
@@ -75,7 +87,27 @@ return {
 			local dapui = require("dapui")
 			local dap_python = require("dap-python")
 
-			require("dapui").setup()
+			require("dapui").setup({
+				layouts = {
+					{
+						elements = {
+							{ id = "scopes", size = 0.50 },
+							{ id = "watches", size = 0.20 },
+							{ id = "stacks", size = 0.20 },
+							{ id = "breakpoints", size = 0.10 },
+						},
+						position = "left",
+						size = 60,
+					},
+					{
+						elements = {
+							{ id = "repl", size = 1.0 },
+						},
+						position = "bottom",
+						size = 10,
+					},
+				},
+			})
 			require("dap-python").setup()
 
 			require("nvim-dap-virtual-text").setup({
