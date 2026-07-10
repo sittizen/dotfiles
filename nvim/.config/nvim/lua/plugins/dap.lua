@@ -29,6 +29,29 @@ return {
 			},
 
 			{
+				"<leader>dr",
+				function()
+					local watches = require("dapui").elements.watches
+					local items = watches.get()
+					if #items == 0 then
+						vim.notify("No watches to remove", vim.log.levels.WARN)
+						return
+					end
+					vim.ui.select(items, {
+						prompt = "Remove watch",
+						format_item = function(item)
+							return item.expression
+						end,
+					}, function(choice, idx)
+						if choice then
+							watches.remove(idx)
+						end
+					end)
+				end,
+				desc = "Remove watch",
+			},
+
+			{
 				"<leader>dc",
 				function()
 					require("dap").continue()
