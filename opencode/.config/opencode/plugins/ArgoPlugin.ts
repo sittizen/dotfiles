@@ -192,11 +192,12 @@ const getCostDetails = (cost?: number) =>
   typeof cost === "number" && cost > 0 ? { total: cost } : undefined;
 
 const getOtelTokenAttributes = (tokens: TokenUsage) => ({
-  "gen_ai.usage.input_tokens": tokens.input,
-  "gen_ai.usage.output_tokens": tokens.output,
+  "gen_ai.usage.input_tokens":
+    tokens.input + tokens.cache.read + tokens.cache.write,
+  "gen_ai.usage.output_tokens": tokens.output + tokens.reasoning,
   "gen_ai.usage.reasoning_tokens": tokens.reasoning,
   "gen_ai.usage.cache_read.input_tokens": tokens.cache.read,
-  "gen_ai.usage.cache_write.input_tokens": tokens.cache.write,
+  "gen_ai.usage.cache_creation.input_tokens": tokens.cache.write,
   "gen_ai.usage.total_tokens": getTokenTotal(tokens),
 });
 
@@ -285,6 +286,7 @@ const createLangfuseSession = async (
   langfuse: Langfuse,
   entries: SessionMessages[],
   idleSessionID: string,
+  textMode: boolean,
 ) => {
   const root = entries.find((entry) => entry.session.id === idleSessionID);
   const rootSession =
@@ -324,20 +326,25 @@ const createLangfuseSession = async (
             ? { variant: message.info.variant ?? entry.session.model?.variant }
             : {}),
         },
+        // omit input.parts, output.parts, output.toolCalls when textMode is true
         input: {
           role: message.info.role,
           parentMessageId: message.info.parentID,
-          parts: message.parts.filter(
-            (part) => part.type === "step-start" || part.type === "file",
-          ),
+          parts: textMode
+            ? []
+            : message.parts.filter(
+                (part) => part.type === "step-start" || part.type === "file",
+              ),
         },
         output: {
           role: message.info.role,
-          parts: [
-            ...getReasoningOutput(message.parts),
-            ...getTextOutput(message.parts),
-          ],
-          toolCalls: getToolCalls(message.parts),
+          parts: textMode
+            ? []
+            : [
+                ...getReasoningOutput(message.parts),
+                ...getTextOutput(message.parts),
+              ],
+          toolCalls: textMode ? [] : getToolCalls(message.parts),
           finishReason: message.info.finish,
         },
         usage: {
@@ -401,6 +408,7 @@ export const ArgoPlugin: Plugin = async ({ client }) => {
   let config: {
     team?: string;
     user?: string;
+    text?: boolean;
     langfuse?: { secret_key?: string; public_key?: string; base_url?: string };
   } = {};
   try {
@@ -418,6 +426,7 @@ export const ArgoPlugin: Plugin = async ({ client }) => {
     typeof config.team === "string" && config.team.length > 0
       ? config.team
       : "unknown";
+  const textMode = config.text !== false;
   userId = getUserId();
   projectId = getProjectId();
 
@@ -484,7 +493,12 @@ export const ArgoPlugin: Plugin = async ({ client }) => {
             );
 
             try {
-              await createLangfuseSession(langfuse, sessionEntries, sessionID);
+              await createLangfuseSession(
+                langfuse,
+                sessionEntries,
+                sessionID,
+                textMode,
+              );
             } catch {
               console.warn(
                 "[argo] langfuse server unreachable — telemetry skipped",
