@@ -9,6 +9,7 @@ return {
 				go = { "gofmt" },
 				json = { "jq" },
 				jsonc = { "jq" },
+				toml = { "taplo" },
 				typescript = { "prettier" },
 				typescriptreact = { "prettier" },
 			},

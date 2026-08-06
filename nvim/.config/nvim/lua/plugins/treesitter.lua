@@ -16,6 +16,7 @@ return {
 				"fish",
 				"markdown",
 				"markdown_inline",
+				"toml",
 			},
 			sync_install = false,
 			auto_install = false,
