@@ -1,7 +1,7 @@
 return {
   "EdenEast/nightfox.nvim",
   enabled = true,
-  options = {
+  opts = {
     dim_inactive = true
   },
   config = function()

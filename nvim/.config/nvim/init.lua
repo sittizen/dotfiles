@@ -3,8 +3,8 @@ require("core.lazy")
 require("core.lsp")
 require("config.keymaps")
 require("config.autocmds")
-require("config.keys")
 vim.env.UV_NATIVE_TLS = "1"
+vim.env.PATH = (vim.env.HOME .. "/.local/bin:") .. (vim.env.HOME .. "/.cargo/bin:") .. (vim.env.PATH or "")
 vim.g.loaded_node_provider = 0
 vim.g.loaded_perl_provider = 0
 vim.g.loaded_python3_provider = 0
