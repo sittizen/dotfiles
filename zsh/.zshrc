@@ -89,6 +89,7 @@ alias oca="opencode attach http://locahost:9998"
 alias am="alsamixer"
 alias marp="npx @marp-team/marp-cli@4.3.0"
 alias lit="/mnt/media/data/home/sc/node_modules/.bin/lit"
+alias zt="zathura"
 
 # clean exports
 export GITLAB_URL=https://gitlab.gruppomol.lcl/
