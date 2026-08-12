@@ -163,9 +163,3 @@ add-zsh-hook chpwd auto_tmux_session
 eval "$(fzf --zsh)"
 eval "$(zoxide init zsh)"
 
-
-# opencode
-export PATH=/home/simone.cittadini@gruppomol.lcl/.opencode/bin:$PATH
-
-# opencode
-export PATH=/home/sc/.opencode/bin:$PATH

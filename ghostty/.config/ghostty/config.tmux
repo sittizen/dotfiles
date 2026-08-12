@@ -3,5 +3,5 @@ theme = Oceanic Next
 font-family = FiraCode Nerd Font Propo Med
 font-size = 18
 cursor-style-blink = false
-command = herdr 
+command = ~/.config/ghostty/tmux-vault
 shell-integration = zsh
