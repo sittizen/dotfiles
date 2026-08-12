@@ -56,8 +56,10 @@ const getUserId = (): string => {
     );
     if (typeof cfg.user === "string" && cfg.user.length > 0) return cfg.user;
   } catch {
-    // ignore — fall through to whoami
+    // ignore — fall through to environment or whoami
   }
+  const envUser = process.env.ARGO_USER;
+  if (typeof envUser === "string" && envUser.length > 0) return envUser;
   try {
     return execSync("whoami", { encoding: "utf-8" }).trim();
   } catch {
@@ -404,43 +406,59 @@ const createLangfuseSession = async (
 };
 
 export const ArgoPlugin: Plugin = async ({ client }) => {
-  // load valid config or exit
+  // load valid config from file or environment variables
   let config: {
     team?: string;
     user?: string;
     text?: boolean;
     langfuse?: { secret_key?: string; public_key?: string; base_url?: string };
-  } = {};
+  } | undefined;
   try {
     config = JSON.parse(
       readFileSync(join(homedir(), ".config", "argo", "config.json"), "utf-8"),
     );
   } catch {
-    console.error(
-      "[argo] Failed to read ~/.config/argo/config.json — plugin disabled",
-    );
-    return {};
+    config = undefined;
   }
 
-  team =
-    typeof config.team === "string" && config.team.length > 0
-      ? config.team
-      : "unknown";
-  const textMode = config.text !== false;
+  const textMode = config?.text !== false;
   userId = getUserId();
   projectId = getProjectId();
 
-  const secretKey = config.langfuse?.secret_key;
-  const publicKey = config.langfuse?.public_key;
-  const baseUrl = config.langfuse?.base_url;
+  let secretKey: string | undefined;
+  let publicKey: string | undefined;
+  let baseUrl: string | undefined;
 
-  if (!secretKey || !publicKey || !baseUrl) {
-    console.error(
-      "[argo] langfuse.secret_key, langfuse.public_key, langfuse.base_url must be set in ~/.config/argo/config.json — plugin disabled",
-    );
-    return {};
+  if (config) {
+    team =
+      typeof config.team === "string" && config.team.length > 0
+        ? config.team
+        : "unknown";
+    secretKey = config.langfuse?.secret_key;
+    publicKey = config.langfuse?.public_key;
+    baseUrl = config.langfuse?.base_url;
+
+    if (!secretKey || !publicKey || !baseUrl) {
+      console.error(
+        "[argo] langfuse.secret_key, langfuse.public_key, langfuse.base_url must be set in ~/.config/argo/config.json — plugin disabled",
+      );
+      return {};
+    }
+    console.info("[argo] config loaded\n");
+  } else {
+    team = process.env.ARGO_TEAM || "unknown";
+    secretKey = process.env.ARGO_LANGFUSE_SECRET_KEY;
+    publicKey = process.env.ARGO_LANGFUSE_PUBLIC_KEY;
+    baseUrl = process.env.ARGO_LANGFUSE_BASE_URL;
+
+    if (!secretKey || !publicKey || !baseUrl) {
+      console.warn(
+        "[argo] No ~/.config/argo/config.json found and required environment variables (ARGO_LANGFUSE_SECRET_KEY, ARGO_LANGFUSE_PUBLIC_KEY, ARGO_LANGFUSE_BASE_URL) not set — plugin disabled",
+      );
+      return {};
+    }
+    console.info("[argo] config loaded from environment variables\n");
   }
-  console.info("[argo] config loaded\n");
 
   const langfuse = new Langfuse({
     secretKey,

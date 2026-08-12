@@ -3,8 +3,8 @@
   "theme": "system",
   "attention": {
     "enabled": true,
-    "notifications": true,
-    "sound": true,
+    "notifications": false,
+    "sound": false,
     "volume": 0.4,
     "sound_pack": "opencode.default"
   }
