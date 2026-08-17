@@ -1,0 +1,223 @@
+onboarding = false
+# Herdr configuration translated from ~/.tmux.conf.
+# Comments prefixed with `# tmux:` mark tmux directives that have no direct
+# herdr equivalent and were intentionally omitted.
+
+# ─── Terminal defaults ──────────────────────────────────────────────────────
+# tmux: set-option -g default-shell /bin/zsh
+[terminal]
+default_shell = "/bin/zsh"
+
+# ─── Theme ──────────────────────────────────────────────────────────────────
+# tmux: set -g @plugin 'catppuccin/tmux#v2.1.3'
+# tmux: set -g @catppuccin_flavor "frappe"
+#   herdr ships only two catppuccin variants: `catppuccin` (mocha) and
+#   `catppuccin-latte`. There is no `frappe` flavor, so `catppuccin` is the
+#   closest dark equivalent. Switch with theme.name = "catppuccin-latte"
+#   for the light variant.
+[theme]
+name = "catppuccin"
+
+# tmux: set -g @catppuccin_window_status_style "rounded"
+#   tmux-specific — no herdr equivalent. herdr uses rounded UI chrome by default.
+
+# ─── Keybindings ────────────────────────────────────────────────────────────
+# tmux: unbind C-b   →  displaced by setting prefix below (default was ctrl+b).
+# tmux: unbind M-F1 / unbind M-F2
+#   tmux-specific unbinds; herdr has no concept of function-key defaults to
+#   unbind and the new prefix overrides the only default that mattered.
+# tmux: unbind-key -T copy-mode WheelUpPane  (and other wheel bindings)
+#   tmux-specific — copy mode wheel bindings do not exist in herdr.
+# tmux: unbind-key -T copy-mode-vi j/i/k/l   (vi cursor remap)
+#   tmux-specific — herdr copy mode uses h/j/k/l natively; no remap needed.
+
+[keys]
+# tmux: set -g prefix C-Space
+prefix = "ctrl+space"
+workspace_picker = "ctrl+f9"
+
+# tmux: bind-key v copy-mode
+copy_mode = "prefix+v"
+# tmux: bind-key x kill-pane
+close_pane = "prefix+x"
+
+# tmux: bind-key -n M-d split-window   (stacked panes, tmux default split)
+split_horizontal = "alt+d"
+
+# tmux: bind-key -n M-r split-window -h \; resize-pane -x "40%"
+# tmux: bind-key -n M-t split-window -h
+#   Both tmux bindings open the same side-by-side split; herdr has no
+#   percentage-based resize API, so the `resize-pane -x "40%"` half of M-r
+#   has no equivalent. Both chords map to herdr's split_vertical; delete
+#   one of them if you only want to keep a single shortcut.
+split_vertical = ["alt+r", "alt+t"]
+
+# tmux: bind -n M-j/k/i/l select-pane -L/D/U/R
+focus_pane_left = "alt+j"
+focus_pane_down = "alt+k"
+focus_pane_up = "alt+i"
+focus_pane_right = "alt+l"
+
+# tmux: bind -n M-a resize-pane -Z
+zoom = "alt+a"
+# tmux: bind -n M-c new-window
+new_tab = "alt+c"
+
+# tmux: bind-key -n M-F1 selectw -t 1
+# tmux: bind-key -n M-F2 selectw -t 2
+#   tmux jump-to-window-n via M-Fn has no clean herdr equivalent. herdr's
+#   indexed switch_tab only accepts digit ranges (prefix+1..9), not function
+#   keys. Use `keys.switch_tab = "prefix+1..9"` (default) for prefix+1/2, or
+#   `previous_workspace` / `next_workspace` for sequential traversal.
+
+# ─── Custom command bindings (popup popovers) ────────────────────────────────
+# Each mirrors the tmux `display-popup` bindings. herdr runs custom commands
+# from the focused pane's CWD automatically, so the tmux `-d "#{pane_current_path}"`
+# is implicit.
+#
+# tmux: bind -n C-F1 display-popup -w 90% -h 90% -d "#{pane_current_path}" -E "btop"
+[[keys.command]]
+key = "ctrl+f1"
+type = "popup"
+command = "btop"
+width = "90%"
+height = "90%"
+description = "btop system monitor"
+
+# tmux: bind -n C-F2 display-popup ... -E "cd ~/Documents && kpcli --kdb=uris_and_secrets.kdbx"
+[[keys.command]]
+key = "ctrl+f2"
+type = "popup"
+command = "cd ~/Documents && kpcli --kdb=uris_and_secrets.kdbx"
+width = "90%"
+height = "90%"
+description = "kpcli password manager"
+
+# tmux: bind -n C-F4 display-popup ... -E "lazygit"
+[[keys.command]]
+key = "ctrl+f4"
+type = "popup"
+command = "lazygit"
+width = "90%"
+height = "90%"
+description = "lazygit"
+
+# tmux: bind -n C-F5 display-popup ... -E "lazydocker"
+[[keys.command]]
+key = "ctrl+f5"
+type = "popup"
+command = "lazydocker"
+width = "90%"
+height = "90%"
+description = "lazydocker"
+
+# tmux: bind -n C-F6 display-popup ... -E "tuicr"
+[[keys.command]]
+key = "ctrl+f6"
+type = "popup"
+command = "tuicr"
+width = "90%"
+height = "90%"
+description = "tuicr"
+
+# tmux: bind -n C-F7 display-popup ... -E "nvim /tmp/scratch"
+[[keys.command]]
+key = "ctrl+f7"
+type = "popup"
+command = "nvim /tmp/scratch"
+width = "90%"
+height = "90%"
+description = "nvim scratch buffer"
+
+# tmux: bind -n C-F8 display-popup ... -E "sem diff -v --color=always | less -R"
+[[keys.command]]
+key = "ctrl+f8"
+type = "popup"
+command = "sh -c 'sem diff -v --color=always | less -R'"
+width = "90%"
+height = "90%"
+description = "sem diff viewer"
+
+# tmux: bind -n C-F10 display-popup -x 0% -w 60% -h 100% ... -E "nvim ."
+#   tmux -x 0% positions the popup at the left edge; herdr popups have no
+#   x/y position — only width/height. The popup opens centered by default.
+[[keys.command]]
+key = "ctrl+f10"
+type = "popup"
+command = "nvim ."
+width = "60%"
+height = "100%"
+description = "nvim current directory"
+
+# ─── Detached shell commands ────────────────────────────────────────────────
+# tmux: bind-key -n M-F4 run-shell -b '~/workspace/gobbo/next.sh >/dev/null 2>&1'
+[[keys.command]]
+key = "alt+f4"
+type = "shell"
+command = "~/workspace/gobbo/next.sh >/dev/null 2>&1"
+description = "gobbo next"
+
+# tmux: bind-key -n M-F9 run-shell -b '~/workspace/gobbo/prev.sh >/dev/null 2>&1'
+[[keys.command]]
+key = "alt+f9"
+type = "shell"
+command = "~/workspace/gobbo/prev.sh >/dev/null 2>&1"
+description = "gobbo prev"
+
+# ─── Items without a herdr equivalent ───────────────────────────────────────
+#
+# tmux: set -g allow-passthrough on
+#   tmux-only terminal passthrough feature. herdr always forwards the
+#   protocols its host terminal supports; no config required.
+#
+# tmux: set-option -g focus-events on
+#   tmux-only focus reporting flag. herdr handles focus internally.
+#
+# tmux: set -g @plugin 'tmux-plugins/tpm'
+#   tmux-only plugin manager. herdr has no TPM analog — plugins are loaded
+#   from `[[keys.command]] type = "plugin_action"` and marketplace entries.
+#
+# tmux: set -g @plugin 'tmux-plugins/tmux-open'
+# tmux: set -g @plugin 'tmux-plugins/tmux-yank'
+#   tmux-only plugins. herdr covers yank-style copy with mouse drag-select
+#   (`ui.copy_on_select = true`, default) and open with right-click menus.
+#
+# tmux: set -g @plugin 'tmux-plugins/tmux-resurrect'
+#   tmux-only persistence plugin. herdr has built-in session restore
+#   (`session.resume_agents_on_restore`, default true) and pane persistence.
+#
+# tmux: set -g base-index 1
+# tmux: setw -g pane-base-index 1
+#   herdr is 1-based by default for tabs and agents; nothing to set.
+#
+# tmux: set -g set-clipboard on
+#   herdr equivalent is `ui.copy_on_select = true`, which is the default.
+#
+# tmux: set -sg escape-time 0
+#   tmux-only escape-sequence delay. herdr has no equivalent knob.
+#
+# tmux: set -g detach-on-destroy off
+#   tmux-only flag. herdr panes keep running after detach by design — there
+#   is no flag to enable, and no "destroy" event tears the session down.
+#
+# tmux: setw -g mode-keys vi
+#   herdr copy mode is vi-style by default.
+#
+# tmux: setw -g mouse on
+#   herdr captures the mouse by default (`ui.mouse_capture = true`).
+#
+# tmux: status-right / status-left / status-interval / status-right-length /
+#       status-left-length / @catppuccin_status_application /
+#       @catppuccin_status_session
+#   tmux status-line directives with no herdr equivalent. herdr surfaces
+#   session, agent, and workspace state through the sidebar instead of a
+#   status line.
+#
+# tmux: set-option -g update-environment "VAULT_TOKEN"
+#   tmux pulls listed env vars from the parent shell into every new pane.
+#   herdr inherits the launching shell's environment, so any var set before
+#   `herdr` starts (e.g. in your shell rc) is already available — no
+#   update-environment knob is required.
+#
+# tmux: run '~/.tmux/plugins/tpm/tpm'
+#   TPM bootstrap — not applicable to herdr.

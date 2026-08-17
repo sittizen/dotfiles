@@ -1,0 +1,25 @@
+2026-08-12T06:44:57.268447Z  INFO herdr::logging: herdr starting event="app.startup" subsystem="client" outcome="started" pid=1470166
+2026-08-12T06:44:57.268533Z  INFO herdr::client: connecting to server path=/home/simone.cittadini@gruppomol.lcl/.config/herdr/herdr-client.sock
+2026-08-12T06:44:57.488363Z  INFO herdr::client: handshake succeeded version=19 encoding=SemanticFrame
+2026-08-12T06:46:04.760350Z  WARN herdr::raw_input: flushing lone escape after input timeout; if this follows an alt chord or focus switch it may reach the pane as plain esc bytes=[27]
+2026-08-12T06:46:04.760418Z  WARN herdr::raw_input: flushing lone escape after input timeout; if this follows an alt chord or focus switch it may reach the pane as plain esc bytes=[27]
+2026-08-12T06:46:04.941580Z  WARN herdr::raw_input: flushing lone escape after input timeout; if this follows an alt chord or focus switch it may reach the pane as plain esc bytes=[27]
+2026-08-12T06:46:04.941676Z  WARN herdr::raw_input: flushing lone escape after input timeout; if this follows an alt chord or focus switch it may reach the pane as plain esc bytes=[27]
+2026-08-12T07:05:55.835155Z  WARN herdr::raw_input: flushing lone escape after input timeout; if this follows an alt chord or focus switch it may reach the pane as plain esc bytes=[27]
+2026-08-12T07:05:55.835383Z  WARN herdr::raw_input: flushing lone escape after input timeout; if this follows an alt chord or focus switch it may reach the pane as plain esc bytes=[27]
+2026-08-12T07:05:57.202994Z  WARN herdr::raw_input: flushing lone escape after input timeout; if this follows an alt chord or focus switch it may reach the pane as plain esc bytes=[27]
+2026-08-12T07:05:57.203091Z  WARN herdr::raw_input: flushing lone escape after input timeout; if this follows an alt chord or focus switch it may reach the pane as plain esc bytes=[27]
+2026-08-12T07:07:13.964111Z  WARN herdr::raw_input: flushing lone escape after input timeout; if this follows an alt chord or focus switch it may reach the pane as plain esc bytes=[27]
+2026-08-12T07:07:13.964322Z  WARN herdr::raw_input: flushing lone escape after input timeout; if this follows an alt chord or focus switch it may reach the pane as plain esc bytes=[27]
+2026-08-12T07:07:14.453897Z  WARN herdr::raw_input: flushing lone escape after input timeout; if this follows an alt chord or focus switch it may reach the pane as plain esc bytes=[27]
+2026-08-12T07:07:14.453998Z  WARN herdr::raw_input: flushing lone escape after input timeout; if this follows an alt chord or focus switch it may reach the pane as plain esc bytes=[27]
+2026-08-12T07:07:43.250134Z  WARN herdr::raw_input: flushing lone escape after input timeout; if this follows an alt chord or focus switch it may reach the pane as plain esc bytes=[27]
+2026-08-12T07:07:43.250237Z  WARN herdr::raw_input: flushing lone escape after input timeout; if this follows an alt chord or focus switch it may reach the pane as plain esc bytes=[27]
+2026-08-12T07:08:27.196512Z  WARN herdr::raw_input: flushing lone escape after input timeout; if this follows an alt chord or focus switch it may reach the pane as plain esc bytes=[27]
+2026-08-12T07:08:27.196638Z  WARN herdr::raw_input: flushing lone escape after input timeout; if this follows an alt chord or focus switch it may reach the pane as plain esc bytes=[27]
+2026-08-12T07:08:43.847271Z  INFO herdr::logging: herdr starting event="app.startup" subsystem="client" outcome="started" pid=1476898
+2026-08-12T07:08:43.847316Z  INFO herdr::client: connecting to server path=/home/simone.cittadini@gruppomol.lcl/.config/herdr/herdr-client.sock
+2026-08-12T07:08:43.993226Z  INFO herdr::client: handshake succeeded version=19 encoding=SemanticFrame
+2026-08-12T11:46:37.663437Z  INFO herdr::logging: herdr starting event="app.startup" subsystem="client" outcome="started" pid=8042
+2026-08-12T11:46:37.663596Z  INFO herdr::client: connecting to server path=/home/simone.cittadini@gruppomol.lcl/.config/herdr/herdr-client.sock
+2026-08-12T11:46:37.878158Z  INFO herdr::client: handshake succeeded version=19 encoding=SemanticFrame

@@ -1,4 +1,8 @@
 nvim/lazy-lock.json
 nvim/.config/nvim/lazy-lock.json
-opencode/.config/opencode/package-lock.json
 nvim/.config/nvim/lua/config/keys.lua
+opencode/.config/opencode/package-lock.json
+pi/.pi/agent/sessions/
+pi/.pi/agent/auth.json
+herdr/.config/herdr/herdr-server.log
+herdr/.config/herdr/session.json
