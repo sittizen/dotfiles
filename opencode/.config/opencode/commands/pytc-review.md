@@ -1,8 +1,8 @@
 ---
-description: Review code changes in current branch searching for bugs, security issues, and code quality problems
+description: Review code changes in current branch searching for bugs and security issues.
 ---
 
-Review source files changes for bugs, security vulnerabilities, and code quality problems.
+Review source files changes for bugs and security vulnerabilities.
 
 # workflow
 
@@ -16,28 +16,24 @@ git diff $1..HEAD
 
 then determine if they introduce:
 
-- bugs or regressions
-- incorrect logic
-- unsafe behavior
 - broken API contracts
+- bugs or regressions
 - security issues
 
 Do not modify code.
 
-If NO issues are found:
-    reply with just one word: `OK`
+This is not an optimization check, as long as the code is working as expected and secure the check is passed.
+
+If NO issues are found, reply with just one word: `OK`
 
 If ANY issue exists:
-    Write `BRANCH_REVIEW.md` in the project root with blocking findings severity-classified, followed by clear instructions on how to fix. Then reply with just one word: `BLOCKING` .
+    Write `BRANCH_REVIEW.md` in the project root with findings, followed by clear instructions on how to fix.
+    Then reply with just one word: `BLOCKING` .
 
 When writing `BRANCH_REVIEW.md`, use this structure:
 
-# Branch Review
-
 ```markdown
 ## BLOCKING: {short description}
-
-{severity-classification}
 
 Files:
 - {list of relevant project files}

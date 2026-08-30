@@ -21,20 +21,20 @@ Be strict. A semantically equivalent implementation in a different path or with 
 
 Do not modify code.
 
-If the contract passes, reply with just one word: `OK`.
+If NO issues are found, reply with just one word: `OK`
 
-If the contract fails, append you findings to file `SHAPES_REVIEW.md` in project root, suggesting fixes. Then reply with just one word: `BLOCKING`.
+If ANY issue exists:
+    Write your findings to `SHAPES_REVIEW_$1.md` inside project root, suggesting fixes.
+    Then reply with just one word: `BLOCKING`.
 
 # Report Format
 
-When writing in `SHAPES_REVIEW.md`, use this structure:
+When writing in `SHAPES_REVIEW_$1.md`, use this structure:
 
 ```markdown
-# Shapes Review
+## BLOCKING
 
-## BLOCKING: {shape-id}
-
-Contract: `/etc/templates/shapes/{shape-id}/shape.md`
+Contract: `/etc/templates/shapes/$1/shape.md`
 
 Files:
 - {list of relevant project files}
