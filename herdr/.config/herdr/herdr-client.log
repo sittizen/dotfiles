@@ -23,3 +23,17 @@
 2026-08-12T11:46:37.663437Z  INFO herdr::logging: herdr starting event="app.startup" subsystem="client" outcome="started" pid=8042
 2026-08-12T11:46:37.663596Z  INFO herdr::client: connecting to server path=/home/simone.cittadini@gruppomol.lcl/.config/herdr/herdr-client.sock
 2026-08-12T11:46:37.878158Z  INFO herdr::client: handshake succeeded version=19 encoding=SemanticFrame
+2026-08-18T08:01:29.820296Z  INFO herdr::logging: herdr starting event="app.startup" subsystem="client" outcome="started" pid=1449839
+2026-08-18T08:01:29.820522Z  INFO herdr::client: connecting to server path=/home/simone.cittadini@gruppomol.lcl/.config/herdr/herdr-client.sock
+2026-08-18T08:01:30.067827Z  INFO herdr::client: handshake succeeded version=19 encoding=SemanticFrame
+2026-08-20T08:42:52.807562Z  INFO herdr::logging: herdr exiting event="app.shutdown" subsystem="client" outcome="completed" pid=1449839
+2026-08-20T08:43:03.355349Z  INFO herdr::logging: herdr starting event="app.startup" subsystem="client" outcome="started" pid=2912264
+2026-08-20T08:43:03.355476Z  INFO herdr::client: connecting to server path=/home/simone.cittadini@gruppomol.lcl/.config/herdr/herdr-client.sock
+2026-08-20T08:43:03.378819Z  INFO herdr::client: handshake succeeded version=19 encoding=SemanticFrame
+2026-08-24T06:26:53.428160Z  INFO herdr::logging: herdr starting event="app.startup" subsystem="client" outcome="started" pid=3887231
+2026-08-24T06:26:53.430463Z  INFO herdr::client: connecting to server path=/home/simone.cittadini@gruppomol.lcl/.config/herdr/herdr-client.sock
+2026-08-24T06:26:53.676404Z  INFO herdr::client: handshake succeeded version=20 encoding=SemanticFrame
+2026-08-30T10:20:36.197413Z  INFO herdr::logging: herdr exiting event="app.shutdown" subsystem="client" outcome="completed" pid=3887231
+2026-08-30T10:44:43.599409Z  INFO herdr::logging: herdr starting event="app.startup" subsystem="client" outcome="started" pid=7859
+2026-08-30T10:44:43.599666Z  INFO herdr::client: connecting to server path=/home/simone.cittadini@gruppomol.lcl/.config/herdr/herdr-client.sock
+2026-08-30T10:44:43.805912Z  INFO herdr::client: handshake succeeded version=20 encoding=SemanticFrame
