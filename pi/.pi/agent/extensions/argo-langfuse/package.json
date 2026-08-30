@@ -1,0 +1,10 @@
+{
+  "name": "argo-langfuse",
+  "version": "0.1.0",
+  "description": "pi plugin mirror of the opencode ArgoPlugin: Langfuse token usage tracking",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "langfuse": "^3.30.0"
+  }
+}
