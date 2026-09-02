@@ -7,3 +7,5 @@ pi/.pi/agent/auth.json
 pi/.pi/agent/extensions/*/node_modules/
 herdr/.config/herdr/herdr-server.log
 herdr/.config/herdr/session.json
+/opencode/.config/opencode/service.json
+/herdr/.config/herdr/herdr-client.log
