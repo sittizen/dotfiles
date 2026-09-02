@@ -90,6 +90,7 @@ alias am="alsamixer"
 alias marp="npx @marp-team/marp-cli@4.3.0"
 alias lit="/mnt/media/data/home/sc/node_modules/.bin/lit"
 alias zt="zathura"
+alias ce="clear"
 
 # clean exports
 export GITLAB_URL=https://gitlab.gruppomol.lcl/
@@ -128,25 +129,6 @@ rs() {
   fi
 }
 
-auto_tmux_session() {
-  if git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
-    branch=$(git symbolic-ref --short HEAD 2>/dev/null)
-    if [[ "$branch" =~ ^(devel|master|production|main)$ ]]; then
-      return
-    fi
-    root=$(git rev-parse --show-toplevel)
-    session=$(basename "$root")
-
-    if ! tmux has-session -t "$session" 2>/dev/null; then
-      tmux new-session -ds "$session" -c "$root"
-    fi
-
-    tmux switch-client -t "$session" 2>/dev/null || true
-  fi
-}
-
-add-zsh-hook chpwd auto_tmux_session
-
 ..() {
   cd ..
 }
@@ -162,7 +144,6 @@ add-zsh-hook chpwd auto_tmux_session
 # fuzzy finder
 eval "$(fzf --zsh)"
 eval "$(zoxide init zsh)"
-
 
 # opencode
 export PATH=/home/simone.cittadini@gruppomol.lcl/.opencode/bin:$PATH
