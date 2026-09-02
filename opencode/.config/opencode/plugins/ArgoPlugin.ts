@@ -281,6 +281,7 @@ const getMessageMetadata = (
     "service.version": entry.session.version,
     organization: "Moltiply",
     team: team,
+    user: userId,
   },
 });
 
@@ -407,12 +408,18 @@ const createLangfuseSession = async (
 
 export const ArgoPlugin: Plugin = async ({ client }) => {
   // load valid config from file or environment variables
-  let config: {
-    team?: string;
-    user?: string;
-    text?: boolean;
-    langfuse?: { secret_key?: string; public_key?: string; base_url?: string };
-  } | undefined;
+  let config:
+    | {
+        team?: string;
+        user?: string;
+        text?: boolean;
+        langfuse?: {
+          secret_key?: string;
+          public_key?: string;
+          base_url?: string;
+        };
+      }
+    | undefined;
   try {
     config = JSON.parse(
       readFileSync(join(homedir(), ".config", "argo", "config.json"), "utf-8"),
