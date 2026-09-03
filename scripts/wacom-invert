@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+FLIP=1
+SCALE_ARG=""
+
+usage() {
+    echo "Usage: wacom-invert [--revert] [--scale N]"
+    echo "  --revert  : normal (non-inverted) orientation"
+    echo "  --scale N  : use only central N% of tablet surface (0<N<100)"
+    echo "  Default: invert (180deg) over full tablet surface (CTL-472).)"
+    exit "${1:-0}"
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --revert) FLIP=0;;
+        --scale)
+            [[ $# -lt 2 ]] && { echo "error: --scale requires a value"; usage 1; }
+            SCALE_ARG="$2"; shift;;
+        -h|--help) usage;;
+        *) echo "error: unknown argument: $1"; usage 1;;
+    esac
+    shift
+done
+
+S=1
+if [[ -n "$SCALE_ARG" ]]; then
+    S=$(awk -v n="$SCALE_ARG" 'BEGIN{ if (n+0!=n || n<=0 || n>=100) { print "BAD"; exit 1 } printf "%.9f", n/100 }') \
+        || { echo "error: --scale must be a number, 0<N<100"; usage 1; }
+    [[ "$S" == BAD ]] && { echo "error: --scale must be a number, 0<N<100"; usage 1; }
+fi
+
+read -r A C < <(awk -v s="$S" -v fl="$FLIP" 'BEGIN{
+    k=1/s;
+    if (fl) { t=(1+s)/(2*s); print -k, t }
+    else       { t=(s-1)/(2*s); print k, t }
+}')
+MATRIX="$A 0 $C 0 $A $C 0 0 1"
+
+mapfile -t devices < <(xinput list --name-only 2>/dev/null | grep -i wacom || true)
+[[ ${#devices[@]} -eq 0 ]] && { echo "error: no Wacom device found"; exit 1; }
+
+applied=0
+for dev in "${devices[@]}"; do
+    id=$(xinput list --id-only "$dev" 2>/dev/null || true)
+    [[ -n "$id" ]] || continue
+    xinput set-prop "$id" --type=float "Coordinate Transformation Matrix" $MATRIX
+    echo "applied to: $dev (id $id)"
+    applied=1
+done
+
+[[ $applied -eq 1 ]] || { echo "error: no Wacom device matched"; exit 1; }
