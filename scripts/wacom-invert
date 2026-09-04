@@ -46,7 +46,6 @@ for dev in "${devices[@]}"; do
     id=$(xinput list --id-only "$dev" 2>/dev/null || true)
     [[ -n "$id" ]] || continue
     xinput set-prop "$id" --type=float "Coordinate Transformation Matrix" $MATRIX
-    echo "applied to: $dev (id $id)"
     applied=1
 done
 
