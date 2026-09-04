@@ -93,8 +93,6 @@ alias zt="zathura"
 alias ce="clear"
 
 # clean exports
-export GITLAB_URL=https://gitlab.gruppomol.lcl/
-
 
 # functions
 v() {
@@ -102,9 +100,6 @@ v() {
     export VAULT_TOKEN=$(cat ~/workspace/.uk)
   else
     export VAULT_TOKEN=$(vault login -method=oidc -token-only 2>/dev/null)
-  fi
-  if [[ -n "$TMUX" ]] && [[ -n "$VAULT_TOKEN" ]]; then
-    tmux set-environment -g VAULT_TOKEN "$VAULT_TOKEN"
   fi
 }
 
@@ -117,6 +112,7 @@ rs() {
     export CONTEXT7_API_KEY=$(vault kv get -format=json kv/leona/zsh 2>/dev/null | jq -r .data.data.ctx7)
 
   else
+    export GITLAB_URL=https://gitlab.gruppomol.lcl/
     PYPI_VALS=(`vault read -format json kv/prd/gitlab | jq -r '.data.pypi_install_user, .data.pypi_install_secret'`)
     export UV_INDEX_PYPIMOL_GITLAB_USERNAME=${PYPI_VALS[1]}
     export UV_INDEX_PYPIMOL_USERNAME=${PYPI_VALS[1]}
@@ -147,3 +143,6 @@ eval "$(zoxide init zsh)"
 
 # opencode
 export PATH=/home/simone.cittadini@gruppomol.lcl/.opencode/bin:$PATH
+
+# herdr completion
+[ -f ~/.herdr_completion ] && source ~/.herdr_completion
