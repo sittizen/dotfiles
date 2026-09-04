@@ -1,6 +1,5 @@
 ---
 description: "Generate a visual HTML diff review — before/after architecture comparison with code review analysis"
-skill: visual-explainer
 ---
 Generate a comprehensive visual diff review aimed at developers as a self-contained HTML page.
 
