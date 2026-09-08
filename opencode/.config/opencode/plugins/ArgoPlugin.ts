@@ -49,10 +49,13 @@ type SessionMessages = {
   messages: SessionMessage[];
 };
 
+const getArgoConfigPath = () =>
+  join(process.env.XDG_CONFIG_HOME ?? join(homedir(), ".config"), "argo", "config.json");
+
 const getUserId = (): string => {
   try {
     const cfg = JSON.parse(
-      readFileSync(join(homedir(), ".config", "argo", "config.json"), "utf-8"),
+      readFileSync(getArgoConfigPath(), "utf-8"),
     );
     if (typeof cfg.user === "string" && cfg.user.length > 0) return cfg.user;
   } catch {
@@ -422,7 +425,7 @@ export const ArgoPlugin: Plugin = async ({ client }) => {
     | undefined;
   try {
     config = JSON.parse(
-      readFileSync(join(homedir(), ".config", "argo", "config.json"), "utf-8"),
+      readFileSync(getArgoConfigPath(), "utf-8"),
     );
   } catch {
     config = undefined;
