@@ -9,3 +9,4 @@ herdr/.config/herdr/herdr-server.log
 herdr/.config/herdr/session.json
 /opencode/.config/opencode/service.json
 /herdr/.config/herdr/herdr-client.log
+/herdr/.config/herdr/release-notes.json
