@@ -1,0 +1,9 @@
+[tools]
+"aqua:ogham/exa" = "latest"
+bat = "latest"
+btop = "latest"
+lazydocker = "latest"
+lazygit = "latest"
+marp-cli = "latest"
+neovim = "latest"
+zoxide = "latest"

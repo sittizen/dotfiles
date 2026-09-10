@@ -55,7 +55,7 @@ zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 
 # env vals
 export SHELL=/bin/zsh
-export EDITOR=/usr/local/bin/nvim
+export EDITOR=~/.local/share/mise/shims/nvim
 export OPENCODE_EXPERIMENTAL_LSP_TOOL=true
 export CHROME_DEVEL_SANDBOX=/usr/local/sbin/chrome_sandbox
 
@@ -72,7 +72,7 @@ alias l='exa -1 -l --classify --icons --color-scale --group-directories-first --
 alias lt='exa -1 -l --classify --icons --color-scale --tree --no-permissions --no-user'
 alias la='exa -1 -l --classify --icons --color-scale --all'
 alias lta='exa -1 -l --classify --icons --color-scale --all --tree --no-permissions --no-user'
-alias cat="batcat -p"
+alias cat="bat -p"
 alias vim='nvim'
 alias vi='nvim'
 alias n='nvim .'
@@ -87,7 +87,6 @@ alias tms="timew summary"
 alias oc="opencode"
 alias oca="opencode attach http://locahost:9998"
 alias am="alsamixer"
-alias marp="npx @marp-team/marp-cli@4.3.0"
 alias lit="/mnt/media/data/home/sc/node_modules/.bin/lit"
 alias zt="zathura"
 alias ce="clear"
@@ -137,12 +136,11 @@ rs() {
   cd .. && cd .. && cd ..
 }
 
-# fuzzy finder
 eval "$(fzf --zsh)"
 eval "$(zoxide init zsh)"
+eval "$(mise activate zsh)"
+[ -f ~/.herdr_completion ] && source ~/.herdr_completion
 
 # opencode
 export PATH=/home/simone.cittadini@gruppomol.lcl/.opencode/bin:$PATH
 
-# herdr completion
-[ -f ~/.herdr_completion ] && source ~/.herdr_completion
