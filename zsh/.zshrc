@@ -136,11 +136,7 @@ rs() {
   cd .. && cd .. && cd ..
 }
 
+eval "$(mise activate zsh)"
 eval "$(fzf --zsh)"
 eval "$(zoxide init zsh)"
-eval "$(mise activate zsh)"
-[ -f ~/.herdr_completion ] && source ~/.herdr_completion
-
-# opencode
-export PATH=/home/simone.cittadini@gruppomol.lcl/.opencode/bin:$PATH
-
+[ -f ~/.herdr_completion ] && source ~/.herdr_completion 2>/dev/null
