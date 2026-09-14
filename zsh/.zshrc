@@ -91,10 +91,8 @@ alias lit="/mnt/media/data/home/sc/node_modules/.bin/lit"
 alias zt="zathura"
 alias ce="clear"
 
-# clean exports
-
 # functions
-v() {
+v() { # retrieves vault token
   if [[ "$(hostname)" == "leona" ]]; then
     export VAULT_TOKEN=$(cat ~/workspace/.uk)
   else
@@ -106,7 +104,12 @@ if [[ -z "$VAULT_TOKEN" ]] && [[ -o interactive ]]; then
   v
 fi
 
-rs() {
+pp() { # purge unused packages
+  dpkg -l | awk '/^rc/ {print $2}' | xargs -r sudo dpkg --purge
+}
+
+
+rs() { # retrieves auths from vault
   if [[ "$(hostname)" == "leona" ]]; then
     export CONTEXT7_API_KEY=$(vault kv get -format=json kv/leona/zsh 2>/dev/null | jq -r .data.data.ctx7)
 
