@@ -18,7 +18,7 @@ type TokenUsage = {
   };
 };
 
-type ArgoSession = Session & {
+type pytcSession = Session & {
   slug?: string;
   path?: string;
   cost?: number;
@@ -33,35 +33,37 @@ type ArgoSession = Session & {
   metadata?: Record<string, unknown>;
 };
 
-type ArgoAssistantMessage = AssistantMessage & {
+type pytcAssistantMessage = AssistantMessage & {
   tokens: TokenUsage;
   agent?: string;
   variant?: string;
 };
 
 type SessionMessage = {
-  info: ArgoAssistantMessage;
+  info: pytcAssistantMessage;
   parts: Part[];
 };
 
 type SessionMessages = {
-  session: ArgoSession;
+  session: pytcSession;
   messages: SessionMessage[];
 };
 
-const getArgoConfigPath = () =>
-  join(process.env.XDG_CONFIG_HOME ?? join(homedir(), ".config"), "argo", "config.json");
+const getpytcConfigPath = () =>
+  join(
+    process.env.XDG_CONFIG_HOME ?? join(homedir(), ".config"),
+    "pytc",
+    "config.json",
+  );
 
 const getUserId = (): string => {
   try {
-    const cfg = JSON.parse(
-      readFileSync(getArgoConfigPath(), "utf-8"),
-    );
+    const cfg = JSON.parse(readFileSync(getpytcConfigPath(), "utf-8"));
     if (typeof cfg.user === "string" && cfg.user.length > 0) return cfg.user;
   } catch {
     // ignore — fall through to environment or whoami
   }
-  const envUser = process.env.ARGO_USER;
+  const envUser = process.env.PYTC_USER;
   if (typeof envUser === "string" && envUser.length > 0) return envUser;
   try {
     return execSync("whoami", { encoding: "utf-8" }).trim();
@@ -102,7 +104,7 @@ let projectId: string;
 
 const collectedSessions: SessionMessages[] = [];
 
-const upsertSession = (session: ArgoSession) => {
+const upsertSession = (session: pytcSession) => {
   const existing = collectedSessions.find(
     (entry) => entry.session.id === session.id,
   );
@@ -409,7 +411,7 @@ const createLangfuseSession = async (
   await langfuse.flushAsync();
 };
 
-export const ArgoPlugin: Plugin = async ({ client }) => {
+export const PytcSessionLog: Plugin = async ({ client }) => {
   // load valid config from file or environment variables
   let config:
     | {
@@ -424,9 +426,7 @@ export const ArgoPlugin: Plugin = async ({ client }) => {
       }
     | undefined;
   try {
-    config = JSON.parse(
-      readFileSync(getArgoConfigPath(), "utf-8"),
-    );
+    config = JSON.parse(readFileSync(getpytcConfigPath(), "utf-8"));
   } catch {
     config = undefined;
   }
@@ -450,34 +450,34 @@ export const ArgoPlugin: Plugin = async ({ client }) => {
 
     if (!secretKey || !publicKey || !baseUrl) {
       console.error(
-        "[argo] langfuse.secret_key, langfuse.public_key, langfuse.base_url must be set in ~/.config/argo/config.json — plugin disabled",
+        "[pytc] langfuse.secret_key, langfuse.public_key, langfuse.base_url must be set in ~/.config/pytc/config.json — plugin disabled",
       );
       return {};
     }
-    console.info("[argo] config loaded\n");
+    console.info("[pytc] config loaded\n");
   } else {
-    team = process.env.ARGO_TEAM || "unknown";
-    secretKey = process.env.ARGO_LANGFUSE_SECRET_KEY;
-    publicKey = process.env.ARGO_LANGFUSE_PUBLIC_KEY;
-    baseUrl = process.env.ARGO_LANGFUSE_BASE_URL;
+    team = process.env.PYTC_TEAM || "unknown";
+    secretKey = process.env.PYTC_LANGFUSE_SECRET_KEY;
+    publicKey = process.env.PYTC_LANGFUSE_PUBLIC_KEY;
+    baseUrl = process.env.PYTC_LANGFUSE_BASE_URL;
 
     if (!secretKey || !publicKey || !baseUrl) {
       console.warn(
-        "[argo] No ~/.config/argo/config.json found and required environment variables (ARGO_LANGFUSE_SECRET_KEY, ARGO_LANGFUSE_PUBLIC_KEY, ARGO_LANGFUSE_BASE_URL) not set — plugin disabled",
+        "[pytc] No ~/.config/pytc/config.json found and required environment variables (PYTC_LANGFUSE_SECRET_KEY, PYTC_LANGFUSE_PUBLIC_KEY, PYTC_LANGFUSE_BASE_URL) not set — plugin disabled",
       );
       return {};
     }
-    console.info("[argo] config loaded from environment variables\n");
+    console.info("[pytc] config loaded from environment variables\n");
   }
 
   const langfuse = new Langfuse({
     secretKey,
     publicKey,
     baseUrl,
-    sdkIntegration: "opencode-argo-plugin",
+    sdkIntegration: "opencode-pytc-plugin",
   });
   langfuse.on("error", () => {
-    console.warn("[argo] langfuse server unreachable — telemetry degraded");
+    console.warn("[pytc] langfuse server unreachable — telemetry degraded");
   });
 
   const hooks: Hooks = {
@@ -498,7 +498,7 @@ export const ArgoPlugin: Plugin = async ({ client }) => {
         });
 
         if (!session.data) return;
-        const sessionData = session.data as ArgoSession;
+        const sessionData = session.data as pytcSession;
 
         // we collect immediatly session data
         if (eventType === "session.next.agent.switched") {
@@ -529,7 +529,7 @@ export const ArgoPlugin: Plugin = async ({ client }) => {
               );
             } catch {
               console.warn(
-                "[argo] langfuse server unreachable — telemetry skipped",
+                "[pytc] langfuse server unreachable — telemetry skipped",
               );
             }
           }
@@ -541,7 +541,7 @@ export const ArgoPlugin: Plugin = async ({ client }) => {
         await langfuse.shutdownAsync();
       } catch {
         console.warn(
-          "[argo] langfuse server unreachable during shutdown — ignored",
+          "[pytc] langfuse server unreachable during shutdown — ignored",
         );
       }
     },
@@ -550,4 +550,4 @@ export const ArgoPlugin: Plugin = async ({ client }) => {
   return hooks;
 };
 
-export default ArgoPlugin;
+export default PytcSessionLog;
