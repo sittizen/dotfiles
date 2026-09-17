@@ -10,6 +10,8 @@ exec --no-startup-id feh --bg-scale ~/Documents/bg.png
 exec --no-startup-id xset s off
 exec --no-startup-id nm-applet
 exec --no-startup-id picom --config  ~/.config/i3/picom.conf -b
+exec --no-startup-id xinput set-prop "Telink amazonbasics_touchpad Touchpad" "Coordinate Transformation Matrix" 4.0 0 0 0 1.5 0 0 0 1
+exec --no-startup-id xinput set-prop "Telink amazonbasics_touchpad Touchpad" "libinput Accel Speed" 0.0
 
 # Use pactl to adjust volume in PulseAudio.
 set $refresh_i3status killall -SIGUSR1 i3status
