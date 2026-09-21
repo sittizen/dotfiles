@@ -483,13 +483,16 @@ project_info() { # sets PJ_NAME PJ_VERSION PJ_BRANCH from --path
 }
 
 check_docker_daemon() { docker info >/dev/null 2>&1 || die "docker daemon not reachable"; }
+
 check_vault() {
   command -v vault >/dev/null 2>&1 || die "missing required command: vault"
   [[ -n "${VAULT_TOKEN:-}" ]] || die "VAULT_TOKEN is not set (never printed by this tool)"
 }
+
 check_image() {
   docker image inspect "$1" >/dev/null 2>&1 || echo "pytc: warning: image $1 not found locally" >&2
 }
+
 warn() { printf 'pytc: warning: %s\n' "$*" >&2; }
 
 resolve_oc_port() {
@@ -596,16 +599,6 @@ cmd_preflight() {
       project_info; check_docker_daemon; check_vault; check_opencode_pytc
       [[ -f "$OPT_PATH/Dockerfile" ]] || die "Dockerfile not found at $OPT_PATH/Dockerfile"
       [[ -f "$OPT_PATH/compose.yaml" ]] || die "compose.yaml not found at $OPT_PATH/compose.yaml"
-      local builder_ref builder_suffix builder_line
-      builder_line=$(grep '^ARG BUILDER_IMAGE=' "$OPT_PATH/Dockerfile" | head -1 || true)
-      [[ -n "$builder_line" ]] || die "ARG BUILDER_IMAGE not found in $OPT_PATH/Dockerfile"
-      builder_ref="${builder_line#*=}"; builder_suffix="${builder_ref#*:}"
-      [[ -f "$OPT_PYTC_DIR/builders/Dockerfile_${builder_suffix}" ]] \
-        || die "builder image file not found: $OPT_PYTC_DIR/builders/Dockerfile_${builder_suffix}"
-      ;;
-    install)
-      [[ -z "$OPT_PATH" ]] || warn "--path ignored for action install"
-      check_vault
       ;;
     upgrade|pubself)
       check_docker_daemon; check_vault
@@ -614,13 +607,6 @@ cmd_preflight() {
         project_info
         [[ -f "$OPT_PATH/Dockerfile.pytc" ]] || die "Dockerfile.pytc required in project path for $ACTION: $OPT_PATH/Dockerfile.pytc"
       fi
-      ;;
-    rollback)
-      command -v systemctl >/dev/null 2>&1 || warn "systemctl not found; rollback needs it"
-      command -v sudo >/dev/null 2>&1 || warn "sudo not found; rollback needs it"
-      ;;
-    build)
-      die "action 'build' appears in usage text but has no implementation; do not use it"
       ;;
     *)
       die "unsupported action: $ACTION"

@@ -1,15 +1,14 @@
 ---
 name: pytc
-description: "Operate the PyTC run.sh toolchain from host OpenCode inside Herdr.
-  Use for PyTC project checks, toolchain shells, publishing, development stacks."
+description: "Operate the PyTC toolchain run.sh from host OpenCode inside Herdr.
+  Use for PyTC project checks, toolchain shells, local integration testing, publishing."
 ---
 
 # PyTC toolchain operation
 
-Operate the PyTC toolchain (`run.sh`) from the **host**, through a dedicated
-Herdr pane. All protocol mechanics (command envelopes, quoting, markers,
-bounded waits) are handled by the bundled helper — never reconstruct them by
-hand.
+Operate the PyTC toolchain (`run.sh`) from the **host**, through Herdr panes.
+All protocol mechanics (command envelopes, quoting, markers, bounded waits)
+are handled by the bundled helper — never reconstruct them.
 
 Helper: `scripts/pytc.sh` inside this skill directory
 (`~/.config/opencode/skills/pytc/scripts/pytc.sh` when installed).
@@ -20,9 +19,11 @@ Helper: `scripts/pytc.sh` inside this skill directory
   caller context. `pytc.sh preflight` enforces `HERDR_ENV=1` plus a reachable
   `herdr pane layout --current`. Missing `herdr`/`HERDR_ENV` means container
   or foreign environment: refuse and explain.
-- Resolve `PYTC_DIR` from an explicit setting, defaulting to
-  `$HOME/workspace/pytc`. Normalize `PYTC_DIR` and project paths to absolute
-  paths before use.
+- **Vault token needed.** Reject execution unless a valid VAULT_TOKEN is
+  available in the host environment. If $VAULT_ADDR cannot be queried:
+  refuse and explain. **Never print the VAULT_TOKEN**
+- Resolve `PYTC_DIR` from an explicit setting, defaulting to `$HOME/workspace/pytc`.
+  Normalize `PYTC_DIR` and project paths to absolute paths before use.
 - **Never** build command envelopes, marker regexes, or quoting yourself.
   Always call `pytc.sh submit` / `pytc.sh wait` etc. Every submission gets a
   fresh random command ID, including retries.
@@ -31,48 +32,45 @@ Helper: `scripts/pytc.sh` inside this skill directory
 - One owned pane per workflow. Record its ID immediately (the helper stores
   it in session state). Never close a pre-existing pane or remove someone
   else's container, even if its name matches the requested project.
-- Project directories are mounted into containers: container commands mutate
-  host files. Do not describe check/version as read-only.
+- Project directories structure is valid only once mounted into containers.
+  Container commands mutate host files.
+  Do not describe check/version as read-only.
+  Do not run uv commands from outside a container.
 
-## Supported actions
-
-`shell`, `run`, `publish`, `devstack`.
-
-### Routing
+## Supported actions routing
 
 | Action | Route | Notes |
 | --- | --- | --- |
 | `shell` | Owned Herdr pane | Full READY/HOST_RETURN lifecycle (below) |
 | `run` | Plain Bash (no pane) | `bash -c` one-shot; skips shell startup sync and zsh-only env; use the shell workflow when those are needed |
 | `publish` | Pane (host phase) | Needs unique DONE plus per-image publication evidence |
-| `devstack` | Pane | Attached Compose; readiness = service health, not log substrings; retain pane if user wants a running stack |
+| `devstack` | Pane | Attached Compose; readiness = service health, not log substrings; retain pane, implies the need of a running stack for successive tests |
 
 ## Preflight
 
 Always run first (it also validates host Herdr context):
 
-```bash
+```sh
 ~/.config/opencode/skills/pytc/scripts/pytc.sh preflight <action> \
   --path /absolute/project [--pytc-dir /absolute/pytc]
 ```
 
-It checks tools individually (`bash`, `jq`, `docker`, `herdr`; `vault` where
-required), `run.sh` executability, project `pyproject.toml` name/version, Git
-branch, Docker daemon, derived container name validity and collisions
-(exact name match, including stopped containers — never adopt or remove),
+It checks required tools presence, `run.sh` executability,
+project `pyproject.toml` name/version, Git branch, Docker daemon,
+derived container name validity and collisions (exact name match,
+including stopped containers — never adopt or remove),
 OpenCode config, opencode port collisions, and per-action files.
-`VAULT_TOKEN` is only checked where required and never printed.
 
-The new pane does not inherit the agent's environment. After `pane-new`, run
-`pytc.sh env-check <session>` (default tools: `vault docker`, includes
-`VAULT_TOKEN` presence) and have the user establish missing credentials in
-the owned pane through normal host setup before launching.
+The new pane does not inherit the agent's environment.
+After `pane-new`, run `pytc.sh env-check <session>` and have
+the user establish missing credentials in the owned pane
+through normal host setup before launching.
 
 ## Session lifecycle
 
 ```bash
 PYTC=~/.config/opencode/skills/pytc/scripts/pytc.sh
-SID=$($PYTC session-new --pytc-dir "$PYTC_DIR" --path "$PROJECT")   # state: pane, ids, lifecycle
+SID=$($PYTC session-new --pytc-dir "$PYTC_DIR" --path "$PROJECT")  # state: pane, ids, lifecycle
 $PYTC pane-new "$SID" checks                                       # owned, labeled pane in $PYTC_DIR
 $PYTC env-check "$SID"
 $PYTC shell-launch "$SID"                                          # state: starting-container
@@ -104,7 +102,7 @@ Rules:
 - Never treat `♪ᕕ(ᐛ)ᕗ`, `Started opencode server.`, progress messages, or
   prompt text as readiness proof — the project may override prompts and the
   server start is unchecked and backgrounded.
-- Defaults: 5 min shell startup, 10 min checks, 20 min publish/push. Extend
+- Defaults: 2 min shell startup, 10 min checks, 15 min publish/push. Extend
   explicitly when justified. Waits are internally bounded (10 s slices);
   after expiry report pending state and evidence — do not launch dependent
   commands and do not automatically rerun publish on unknown status.
@@ -155,34 +153,6 @@ is idle at a prompt, `pytc.sh reset <session>` clears the cancelled command
 and restores the lifecycle state. Pane closure alone does not prove Docker
 removed the container.
 
-## Check / version / publish workflow
-
-1. `preflight shell` (and `preflight publish` when publishing); record
-   existing host Git status/diff.
-2. Session + owned pane; `env-check`; `shell-launch`; `wait-ready`.
-3. `submit --container -- uv run poe all`; require `rc=0`. These checks
-   mutate files (formatting/lint fixes); shell startup also synchronizes
-   project configuration on the mounted path.
-4. For publishing: `submit --container -- version`; require `rc=0`. This is
-   a coherence update, not validation: changed content triggers
-   `uv version --bump patch` and updates `.version_hash`; unchanged content
-   exits 0. A check-only request does not implicitly bump.
-5. Review the resulting host diff (metadata/lock/hash plus any pre-existing
-   work). Commit **only when explicitly authorized**; before committing
-   inspect `git status`, `git diff`, `git log --oneline -10` and stage only
-   intended files. If publishing is blocked by a dirty tree, explain and ask
-   how to proceed — never auto-commit, stash, or force past checks.
-6. If a commit hook or later edit changes content, rerun the affected checks
-   and coherence update; `publish` reruns `version` before its dirty-tree
-   check, so late changes can cause another bump and a refusal.
-7. `container-exit` → `wait-host` → `submit --host -- ./run.sh --action
-   publish --path <absolute-project>`; require `rc=0` **and** a
-   `Published <image>:<version>.` line for each expected image from this
-   invocation (read the command evidence). An old `Published` line or audio
-   cue is not evidence. `publish` also refuses on an empty image set.
-8. Report checks, version change, authorized commits, publication results,
-   and resource state. Preserve evidence before cleanup.
-
 ## Cleanup
 
 - Finite workflows: collect evidence → `container-exit` from a known ready
@@ -192,3 +162,16 @@ removed the container.
   its ID, project, and state; no finite-workflow cleanup.
 - Cancellation/unknown state: recovery rules first (above), then cleanup.
 
+## Development Stacks
+
+When in need of a local stack for development / testing always start with
+the "devstack" action, if environment and tenancy are not specified in the
+prompt ask the user.
+
+```sh
+./run.sh --action devstack --path ~/mounted/project -E [ask] -N [ask]
+```
+Once the stack is up:
+
+- Start the project application by connecting to the running container through
+  a new pane, then running "bash entrypoint.sh"; you can read logs from there.

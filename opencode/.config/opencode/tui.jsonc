@@ -1,6 +1,8 @@
 {
+  "theme": "system",
   "plugin": [
     "./herdr-tui-session.js",
-    "./plugins/PytcSessionStatsPlugin.ts"
+    "./plugins/PytcSessionStatsPlugin.ts",
+    "@ishaksebsib/opencode-tree"
   ]
 }
