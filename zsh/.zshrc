@@ -143,3 +143,6 @@ eval "$(mise activate zsh)"
 eval "$(fzf --zsh)"
 eval "$(zoxide init zsh)"
 [ -f ~/.herdr_completion ] && source ~/.herdr_completion 2>/dev/null
+
+# pytc in_container script (added by ./run.sh)
+export PATH="$HOME/.local/bin:$PATH"
