@@ -2,7 +2,7 @@
   "theme": "system",
   "plugin": [
     "./herdr-tui-session.js",
-    "./plugins/PytcSessionStatsPlugin.ts",
+    "./plugins/PytcSessionStats.ts",
     "@ishaksebsib/opencode-tree"
   ]
 }

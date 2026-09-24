@@ -1,21 +1,22 @@
 ---
-name: portainer
-description: "Read-only Docker Swarm deployment queries against the internal
-  Portainer server. Use to answer stack, service, log, and container stats
-  questions for the stg and prd environments."
+description: "Read-only Docker Swarm deployment queries against the internal Portainer server for the stg and prd environments."
 ---
 
 # Portainer state queries
 
-Answer read-only questions about Docker Swarm deployments managed by the
-internal Portainer server. The human consumes your explanation; the helper is a
-deterministic, machine-readable CLI you drive on their behalf.
+Answer this read-only question about Docker Swarm deployments managed by the
+internal Portainer server:
 
-Helper: `scripts/portainer.sh` inside this skill directory
-(`~/.config/opencode/skills/portainer/scripts/portainer.sh` when installed).
+$ARGUMENTS
+
+The human consumes your explanation; the helper is a deterministic,
+machine-readable CLI you drive on their behalf.
+
+Helper: `~/.config/opencode/commands/portainer/scripts/portainer.sh` (installed
+alongside this command).
 
 ```text
-human -> you (OpenCode agent) -> SKILL.md -> portainer.sh -> Portainer API
+human -> you (OpenCode agent) -> /portainer command -> portainer.sh -> Portainer API
 ```
 
 ## Hard rules
@@ -40,7 +41,7 @@ human -> you (OpenCode agent) -> SKILL.md -> portainer.sh -> Portainer API
 ## Invocation
 
 ```sh
-PORT=$HOME/.config/opencode/skills/portainer/scripts/portainer.sh
+PORT=$HOME/.config/opencode/commands/portainer/scripts/portainer.sh
 
 # 1. which stacks belong to this project in the environment
 "$PORT" --env stg --query stacks

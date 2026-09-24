@@ -29,7 +29,8 @@
     }
   },
   "instructions": [
-    "~/.config/opencode/instructions/caveman.md"
+    "~/.config/opencode/instructions/caveman.md",
+    "~/.config/opencode/instructions/ignore-dirs.md"
   ],
   "share": "disabled",
   "formatter": false,
@@ -41,7 +42,7 @@
         "-y",
         "@playwright/mcp"
       ],
-      "enabled": true
+      "enabled": false
     },
     "context7": {
       "type": "remote",
@@ -55,12 +56,19 @@
   "lsp": true,
   "permission": {
     "read": {
-      "~/.config/opencode/gsd-core/*": "allow"
+      "*": "allow",
+      "*docs/done/*": "deny",
+      "*docs/todo/*": "deny"
     },
-    "external_directory": {
-      "~/.config/opencode/gsd-core/*": "allow"
+    "edit": {
+      "*": "allow",
+      "*docs/done/*": "deny",
+      "*docs/todo/*": "deny"
     }
   },
+  "plugin": [
+    "@plannotator/opencode@latest"
+  ],
   "watcher": {
     "ignore": [
       "**/.assets/",
@@ -88,7 +96,9 @@
       "**/.ssh/",
       "**/.config/",
       "**/.streamlit",
-      "**/sessions"
+      "**/sessions",
+      "**/docs/done/",
+      "**/docs/todo/"
     ]
   }
 }
