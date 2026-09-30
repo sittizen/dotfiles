@@ -26,6 +26,85 @@ fpath=(~/.szh/completions $fpath)
 autoload -U compinit && compinit
 autoload -U ass-zsh-hook
 
+# Let `git worktree` subcommands that take a worktree path (remove/lock/
+# unlock/move) complete real directories, including `~` expansion, like
+# `git checkout` does.  The stock zsh completion only offers registered
+# worktree names as absolute paths, so a `~/...` prefix can never match them.
+# The guard in _git (`(( $+functions[_git-worktree] )) || ...`) keeps this
+# definition when the git completion file is loaded on the first `git <TAB>`.
+_git-worktree() {
+  local curcontext="$curcontext" state line ret=1
+  declare -A opt_args
+
+  _arguments -C \
+    ': :->command' \
+    '*::: := ->option-or-argument' && ret=0
+
+  case $state in
+    (command)
+      local -a commands=(
+        add:'create a new working tree'
+        prune:'prune working tree information'
+        list:'list details of each worktree'
+        lock:'prevent a working tree from being pruned'
+        move:'move a working tree to a new location'
+        remove:'remove a working tree'
+        unlock:'allow working tree to be pruned, moved or deleted'
+      )
+      _describe -t commands command commands && ret=0
+      ;;
+    (option-or-argument)
+      curcontext=${curcontext%:*}-$line[1]:
+      case $line[1] in
+        (add)
+          local -a args
+          if (( $words[(I)--detach] )); then
+            args=( ':branch:__git_branch_names' )
+          else
+            args=( ':commit:__git_commits' )
+          fi
+          _arguments -S $endopt \
+            '(-f --force)'{-f,--force}'[checkout branch even if already checked out in another worktree]' \
+            '(-B --detach)-b+[create a new branch]: :__git_branch_names' \
+            '(-b --detach)-B+[create or reset a branch]: :__git_branch_names' \
+            '(-b -B)--detach[detach HEAD at named commit]' \
+            '--no-checkout[suppress file checkout in new worktree]' \
+            '--lock[keep working tree locked after creation]' \
+            ':path:_directories' $args && ret=0
+          ;;
+        (prune)
+          _arguments -S $endopt \
+            '(-n --dry-run)'{-n,--dry-run}"[don't remove, show only]" \
+            '(-v --verbose)'{-v,--verbose}'[report pruned objects]' \
+            '--expire[expire objects older than specified time]:time' && ret=0
+          ;;
+        (list)
+          _arguments -S $endopt '--porcelain[machine-readable output]' && ret=0
+          ;;
+        (lock)
+          _arguments -C -S $endopt \
+            '--reason=[specify reason for locking]:reason' \
+            ':worktree:_path_files -/' && ret=0
+          ;;
+        (move)
+          _arguments -C -S $endopt \
+            ':worktree:_path_files -/' \
+            ':location:_directories' && ret=0
+          ;;
+        (remove)
+          _arguments -C -S $endopt \
+            '--force[remove working trees that are not clean or that have submodules]' \
+            ':worktree:_path_files -/' && ret=0
+          ;;
+        (unlock)
+          _arguments -C -S $endopt ':worktree:_path_files -/' && ret=0
+          ;;
+      esac
+      ;;
+  esac
+  return ret
+}
+
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
@@ -78,7 +157,7 @@ alias vi='nvim'
 alias n='nvim .'
 alias c='z'
 alias vv="vault token renew $VAULT_TOKEN"
-alias vu='date >> ~/shitty_vpn.log && nmcli connection up "gate_v6"'
+#alias vu='date >> ~/workspace/testing/shitty_vpn/shitty_vpn.log && nmcli connection up "gate_v6"'
 alias vd="nmcli connection down 'gate_v6'"
 alias git-prune="git branch --merged | egrep -v '(^\*|master|dev|production|test)' | xargs git branch -d" 
 alias tma="timew start"
@@ -104,10 +183,36 @@ if [[ -z "$VAULT_TOKEN" ]] && [[ -o interactive ]]; then
   v
 fi
 
+# Split DNS keeps intranet names off Fritz DNS; public DNS must still resolve
+# the VPN endpoint. Refresh its IP, changing only vpn.data's remote key so
+# NetworkManager's auth and certificate settings remain intact.
+vu() {
+  date >> ~/workspace/testing/shitty_vpn/shitty_vpn.log
+
+  nmcli connection modify gate_v6 \
+    ipv4.dns-priority 50 \
+    ipv4.dns "" \
+    ipv4.dns-search "~gruppomol.lcl" || return
+  nmcli connection modify gate_v6 \
+    +ipv4.dns-search "~pycc.gmolapps.lcl" || return
+  nmcli connection modify gate_v6 \
+    +ipv4.dns-search "~aiml.gmolapps.lcl" || return
+
+  local ip
+  ip=$(getent ahostsv4 gate.gruppomol.it | awk 'NR == 1 {print $1}')
+  if [[ -z $ip ]]; then
+    print -u2 'vu: cannot resolve gate.gruppomol.it; not updating endpoint or bringing up VPN'
+    return 1
+  fi
+
+  nmcli connection modify gate_v6 -vpn.data remote || return
+  nmcli connection modify gate_v6 +vpn.data "remote=$ip:443" || return
+  nmcli connection up gate_v6
+}
+
 pp() { # purge unused packages
   dpkg -l | awk '/^rc/ {print $2}' | xargs -r sudo dpkg --purge
 }
-
 
 rs() { # retrieves auths from vault
   if [[ "$(hostname)" == "leona" ]]; then
@@ -146,3 +251,6 @@ eval "$(zoxide init zsh)"
 
 # pytc in_container script (added by ./run.sh)
 export PATH="$HOME/.local/bin:$PATH"
+
+# opencode
+export PATH=/home/simone.cittadini@gruppomol.lcl/.opencode/bin:$PATH

@@ -36,6 +36,7 @@ Helper: `scripts/pytc.sh` inside this skill directory
   Container commands mutate host files.
   Do not describe check/version as read-only.
   Do not run uv commands from outside a container.
+- Use `/portainer` command if in need to query state of project deploy.
 
 ## Supported actions routing
 

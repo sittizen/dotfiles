@@ -68,6 +68,14 @@ height = "90%"
 description = "lazygit"
 
 [[keys.command]]
+key = "ctrl+f3"
+type = "popup"
+command = "/usr/bin/ports"
+width = "90%"
+height = "90%"
+description = "port whisperer"
+
+[[keys.command]]
 key = "ctrl+f5"
 type = "popup"
 command = "~/.local/share/mise/shims/lazydocker"
@@ -87,7 +95,7 @@ description = "tuicr"
 key = "ctrl+f7"
 type = "popup"
 command = "~/.local/share/mise/shims/nvim /tmp/scratch"
-width = "90%"
+width = "50%"
 height = "90%"
 description = "nvim scratch buffer"
 
