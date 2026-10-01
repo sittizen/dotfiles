@@ -194,9 +194,11 @@ vu() {
     ipv4.dns "" \
     ipv4.dns-search "~gruppomol.lcl" || return
   nmcli connection modify gate_v6 \
-    +ipv4.dns-search "~pycc.gmolapps.lcl" || return
+    +ipv4.dns-search "~gmolapps.lcl" || return
   nmcli connection modify gate_v6 \
-    +ipv4.dns-search "~aiml.gmolapps.lcl" || return
+    +ipv4.dns-search "~gmolapps.io" || return
+  nmcli connection modify gate_v6 \
+    +ipv4.dns-search "~gruppomol.it" || return
 
   local ip
   ip=$(getent ahostsv4 gate.gruppomol.it | awk 'NR == 1 {print $1}')
