@@ -98,6 +98,18 @@ const getProjectId = (): string => {
   }
 };
 
+const LANGFUSE_UNREACHABLE =
+  "\x1b[31m[pytc] Logging Impossible due to Langfuse server unreachable\x1b[0m";
+
+const isLangfuseReachable = async (langfuse: Langfuse): Promise<boolean> => {
+  try {
+    await langfuse.api.healthHealth();
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 let team = "unknown";
 let userId: string;
 let projectId: string;
@@ -454,7 +466,6 @@ export const PytcSessionLog: Plugin = async ({ client }) => {
       );
       return {};
     }
-    console.info("[pytc] config loaded\n");
   } else {
     team = process.env.PYTC_TEAM || "unknown";
     secretKey = process.env.PYTC_LANGFUSE_SECRET_KEY;
@@ -467,7 +478,6 @@ export const PytcSessionLog: Plugin = async ({ client }) => {
       );
       return {};
     }
-    console.info("[pytc] config loaded from environment variables\n");
   }
 
   const langfuse = new Langfuse({
@@ -477,8 +487,14 @@ export const PytcSessionLog: Plugin = async ({ client }) => {
     sdkIntegration: "opencode-pytc-plugin",
   });
   langfuse.on("error", () => {
-    console.warn("[pytc] langfuse server unreachable — telemetry degraded");
+    console.error(LANGFUSE_UNREACHABLE);
   });
+
+  if (await isLangfuseReachable(langfuse)) {
+    console.info("[pytc] config loaded\n");
+  } else {
+    console.error(LANGFUSE_UNREACHABLE);
+  }
 
   const hooks: Hooks = {
     event: async ({ event }) => {
@@ -520,6 +536,11 @@ export const PytcSessionLog: Plugin = async ({ client }) => {
               }),
             );
 
+            if (!(await isLangfuseReachable(langfuse))) {
+              console.error(LANGFUSE_UNREACHABLE);
+              return;
+            }
+
             try {
               await createLangfuseSession(
                 langfuse,
@@ -528,9 +549,7 @@ export const PytcSessionLog: Plugin = async ({ client }) => {
                 textMode,
               );
             } catch {
-              console.warn(
-                "[pytc] langfuse server unreachable — telemetry skipped",
-              );
+              console.error(LANGFUSE_UNREACHABLE);
             }
           }
         }
@@ -538,11 +557,13 @@ export const PytcSessionLog: Plugin = async ({ client }) => {
     },
     dispose: async () => {
       try {
+        if (!(await isLangfuseReachable(langfuse))) {
+          console.error(LANGFUSE_UNREACHABLE);
+          return;
+        }
         await langfuse.shutdownAsync();
       } catch {
-        console.warn(
-          "[pytc] langfuse server unreachable during shutdown — ignored",
-        );
+        console.error(LANGFUSE_UNREACHABLE);
       }
     },
   };
