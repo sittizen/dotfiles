@@ -29,19 +29,19 @@ Recompute the frontier and ask the next round.
 
 Finding **facts** is your job, never the user's: when a frontier question needs a fact from the environment (filesystem, tools, etc.),
 dispatch a sub-agent to find it; don't ask the user for anything you could look up yourself.
-The **decisions** are the user's: put each to them and wait.
+The **decisions** are the user's; put each to them and wait.
 
 The session is done when the frontier is empty: every branch of the design tree visited, nothing left silently assumed.
-Consider visited points marked by the user as open, the accepted decision is to come back later with further details.
 Do not act on it until the user confirms you have reached a shared understanding.
+If the user marked points as open, consider those visited: accepted decision for open points is to come back later with further details.
 
-2. Once an understanding is reached, write a detailed report "docs/current/Brief.md"  about the conversation, leaving out eventual open points.
+2. Once an understanding is reached, write a detailed report "docs/current/Investigation.md"  about the conversation, leaving out eventual open points.
 Structure the file in this way:
 ```markdown
 ---
-interviewer: [language model used by the agent] 
+interviewer: [language model used by the agent]
 interviewee: `whoami` output
-date: `date` output 
+date: `date` output
 ---
 
 # Summary
@@ -53,17 +53,17 @@ date: `date` output
 <question answer>
 ```
 
-3. If there are open points, write a second report "docs/current/OpenPoints.md" quickly recapping the reached consensus, then detailing the still open points.
+3. If there are open points, write a second report "docs/current/OpenPoints.md" quickly recapping the reached consensus, then detailing points still open.
 Structure the file in this way:
 ```markdown
 ---
-interviewer: [language model used by the agent] 
+interviewer: [language model used by the agent]
 interviewee: `whoami` output
-date: `date` output 
+date: `date` output
 ---
 
 # Summary
-<short, one paragraph description of the reached consensus detailed in Brief.md>
+<short, one paragraph description of the reached consensus detailed in Investigation.md>
 
 
 <detail of every point left open>

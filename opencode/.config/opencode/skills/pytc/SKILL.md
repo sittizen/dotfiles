@@ -1,6 +1,6 @@
 ---
 name: pytc
-description: "Operate the PyTC toolchain run.sh from host OpenCode inside Herdr.
+description: "Operate the PyTC toolchain run.sh from docker host through Herdr.
   Use for PyTC project checks, toolchain shells, local integration testing, publishing."
 ---
 
@@ -33,10 +33,9 @@ Helper: `scripts/pytc.sh` inside this skill directory
   it in session state). Never close a pre-existing pane or remove someone
   else's container, even if its name matches the requested project.
 - Project directories structure is valid only once mounted into containers.
-  Container commands mutate host files.
-  Do not describe check/version as read-only.
-  Do not run uv commands from outside a container.
-- Use `/portainer` command if in need to query state of project deploy.
+  **Every** `uv` command executed in container mutate host files:
+  Do not describe `uv` commands as read-only.
+  Do not run `uv` commands from outside a container.
 
 ## Supported actions routing
 
