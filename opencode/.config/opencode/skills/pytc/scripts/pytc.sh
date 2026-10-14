@@ -63,7 +63,7 @@ require_state() {
 pane_wait() { # pane regex timeout_ms -> stdout json; rc 0 matched, 1 timeout, 2 other
   local pane="$1" regex="$2" ms="$3" out rc
   set +e
-  out=$(herdr pane wait-output --regex "$regex" "$pane" \
+  out=$(herdr pane wait-output "$pane" --regex "$regex" \
     --source recent-unwrapped --lines "$READ_LINES" --timeout "$ms" 2>&1)
   rc=$?
   set -e
@@ -524,7 +524,7 @@ cmd_container_name() {
     esac
   done
   project_info
-  echo "${PJ_NAME}_${PJ_BRANCH}"
+  echo "$(id -un)-${PJ_NAME}-shell"
 }
 
 cmd_preflight() {
@@ -562,11 +562,11 @@ cmd_preflight() {
   case "$ACTION" in
     shell)
       project_info; check_docker_daemon; check_vault; check_opencode_pytc
-      container_name="${PJ_NAME}_${PJ_BRANCH}"
+      container_name="$(id -un)-${PJ_NAME}-shell"
       [[ "$container_name" =~ ^[a-zA-Z0-9][a-zA-Z0-9_.-]*$ ]] \
-        || die "derived container name '$container_name' is not a valid Docker name (branch '$PJ_BRANCH' contains invalid characters such as '/')"
+        || die "derived container name '$container_name' is not a valid Docker name"
       if docker ps -a --format '{{.Names}}' | grep -Fxq "$container_name"; then
-        die "container '$container_name' already exists; refusing to adopt or remove it automatically"
+        die "container '$container_name' already exists; reuse it with 'docker exec -it $container_name zsh' or remove it with 'docker rm -f $container_name'"
       fi
       check_image local/pytc
       check_port_collision "$(resolve_oc_port)"
