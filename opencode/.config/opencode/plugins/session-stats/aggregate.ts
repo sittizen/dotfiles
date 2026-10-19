@@ -24,7 +24,7 @@ import type {
 export const DIVERGENCE_THRESHOLD = 0.05;
 
 // ---------------------------------------------------------------------------
-// Langfuse metadata extraction (Argo observation shape).
+// Langfuse metadata extraction (PyTC observation shape).
 // ---------------------------------------------------------------------------
 
 const attributesOf = (metadata: unknown): Record<string, unknown> => {
@@ -91,7 +91,7 @@ const resolveTraceSessions = (
   traces: LangfuseTraceSummary[],
   treeSessions: NormalizedSession[],
 ): TraceSessionResolution => {
-  // Argo files exactly one trace per session with a stable id and sets
+  // The PyTC producer files exactly one trace per session with a stable id and sets
   // `sessionId` to the ROOT session id on every trace, so a trace belongs to
   // a tree session only when its id is that session's stable trace id.
   // Anything else in the root's trace list is an orphan.

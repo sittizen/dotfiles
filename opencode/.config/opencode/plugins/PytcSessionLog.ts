@@ -3,7 +3,18 @@ import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
-import Langfuse from "langfuse";
+import { LangfuseClient } from "@langfuse/client";
+import {
+  LANGFUSE_SDK_VERSION,
+  LANGFUSE_TRACER_NAME,
+  LangfuseOtelSpanAttributes,
+  serializeValue,
+  type OtelAttribute,
+  type OtelAttributeValue,
+  type OtelSpan,
+  type OtelTraceRequest,
+} from "@langfuse/core";
+import { createObservationAttributes } from "@langfuse/tracing";
 import type { Hooks, Plugin } from "@opencode-ai/plugin";
 import type { AssistantMessage, Part, Session } from "@opencode-ai/sdk";
 
@@ -101,9 +112,9 @@ const getProjectId = (): string => {
 const LANGFUSE_UNREACHABLE =
   "\x1b[31m[pytc] Logging Impossible due to Langfuse server unreachable\x1b[0m";
 
-const isLangfuseReachable = async (langfuse: Langfuse): Promise<boolean> => {
+const isLangfuseReachable = async (langfuse: LangfuseClient): Promise<boolean> => {
   try {
-    await langfuse.api.healthHealth();
+    await langfuse.api.health.health();
     return true;
   } catch {
     return false;
@@ -155,15 +166,49 @@ const hasTokenUsage = (message: unknown): message is SessionMessage => {
   );
 };
 
-const toDate = (timestamp?: number) =>
-  timestamp ? new Date(timestamp) : undefined;
+const stableHex = (value: string, length: number) =>
+  createHash("sha256").update(value).digest("hex").slice(0, length);
 
-const stableId = (value: string) => {
-  const hex = createHash("sha256").update(value).digest("hex").slice(0, 32);
-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-4${hex.slice(13, 16)}-${(
-    (Number.parseInt(hex.slice(16, 18), 16) & 0x3f) |
-    0x80
-  ).toString(16)}${hex.slice(18, 20)}-${hex.slice(20, 32)}`;
+const stableTraceId = (value: string) => stableHex(value, 32);
+
+const stableSpanId = (value: string) => stableHex(value, 16);
+
+const toUnixNano = (timestamp?: number) =>
+  timestamp !== undefined
+    ? (BigInt(Math.trunc(timestamp)) * 1_000_000n).toString()
+    : undefined;
+
+const toAttributeValue = (value: unknown): OtelAttributeValue | undefined => {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value === "boolean") return { boolValue: value };
+  if (typeof value === "number") {
+    return Number.isInteger(value)
+      ? { intValue: value }
+      : { doubleValue: value };
+  }
+  if (typeof value === "string") return { stringValue: value };
+  return { stringValue: serializeValue(value) ?? String(value) };
+};
+
+const toOtelAttributes = (
+  attributes: Record<string, unknown>,
+): OtelAttribute[] =>
+  Object.entries(attributes).flatMap(([key, value]) => {
+    const converted = toAttributeValue(value);
+    return converted ? [{ key, value: converted }] : [];
+  });
+
+const flattenTraceMetadata = (metadata?: Record<string, unknown>) => {
+  const attributes: Record<string, unknown> = {};
+  if (!metadata) return attributes;
+  for (const [key, value] of Object.entries(metadata)) {
+    const serialized = serializeValue(value);
+    if (serialized !== undefined) {
+      attributes[`${LangfuseOtelSpanAttributes.TRACE_METADATA}.${key}`] =
+        serialized;
+    }
+  }
+  return attributes;
 };
 
 const getTextOutput = (parts: Part[]) =>
@@ -303,7 +348,7 @@ const getMessageMetadata = (
 });
 
 const createLangfuseSession = async (
-  langfuse: Langfuse,
+  langfuse: LangfuseClient,
   entries: SessionMessages[],
   idleSessionID: string,
   textMode: boolean,
@@ -313,114 +358,174 @@ const createLangfuseSession = async (
     root?.session ?? entries.find((entry) => !entry.session.parentID)?.session;
   const sessionId = rootSession?.id ?? idleSessionID;
 
-  for (const entry of entries) {
-    const trace = langfuse.trace({
-      id: stableId(`trace:${entry.session.id}`),
-      name: entry.session.title || entry.session.slug,
-      sessionId,
-      userId,
-      timestamp: toDate(entry.session.time.created),
-      version: entry.session.version,
-      input: {}, // leave empty to save space, we are just interested in costs
-      output: {}, // same
-      metadata: getSessionMetadata(entry),
-      tags: [entry.session.agent, userId, projectId].filter(
-        (tag): tag is string => Boolean(tag),
-      ),
-    });
+  const resourceSpans: OtelTraceRequest["resourceSpans"] = entries.map(
+    (entry) => {
+      const traceId = stableTraceId(`trace:${entry.session.id}`);
+      const rootSpanId = stableSpanId(`session:${entry.session.id}`);
+      const lastMessage = entry.messages.at(-1);
+      const endTime =
+        lastMessage?.info.time.completed ?? entry.session.time.created;
 
-    for (const message of entry.messages) {
-      const generation = trace.generation({
-        id: stableId(`generation:${message.info.id}`),
-        name: `${message.info.providerID}/${message.info.modelID}`,
-        startTime: toDate(message.info.time.created),
-        endTime: toDate(message.info.time.completed),
-        model: message.info.modelID,
-        modelParameters: {
-          provider: message.info.providerID,
-          mode: message.info.mode,
-          ...((message.info.agent ?? entry.session.agent)
-            ? { agent: message.info.agent ?? entry.session.agent }
-            : {}),
-          ...((message.info.variant ?? entry.session.model?.variant)
-            ? { variant: message.info.variant ?? entry.session.model?.variant }
-            : {}),
-        },
-        // omit input.parts, output.parts, output.toolCalls when textMode is true
-        input: {
-          role: message.info.role,
-          parentMessageId: message.info.parentID,
-          parts: textMode
-            ? []
-            : message.parts.filter(
-                (part) => part.type === "step-start" || part.type === "file",
-              ),
-        },
-        output: {
-          role: message.info.role,
-          parts: textMode
-            ? []
-            : [
-                ...getReasoningOutput(message.parts),
-                ...getTextOutput(message.parts),
-              ],
-          toolCalls: textMode ? [] : getToolCalls(message.parts),
-          finishReason: message.info.finish,
-        },
-        usage: {
-          promptTokens: message.info.tokens.input,
-          completionTokens: message.info.tokens.output,
-          totalTokens: getTokenTotal(message.info.tokens),
-        },
-        usageDetails: getUsageDetails(message.info.tokens),
-        costDetails: getCostDetails(message.info.cost),
-        metadata: getMessageMetadata(entry, message),
-        level: message.info.error ? "ERROR" : "DEFAULT",
-        statusMessage: message.info.error
-          ? JSON.stringify(message.info.error)
-          : message.info.finish,
-      });
+      const rootAttributes: Record<string, unknown> = {
+        [LangfuseOtelSpanAttributes.OBSERVATION_TYPE]: "span",
+        [LangfuseOtelSpanAttributes.TRACE_NAME]:
+          entry.session.title || entry.session.slug,
+        [LangfuseOtelSpanAttributes.TRACE_SESSION_ID]: sessionId,
+        [LangfuseOtelSpanAttributes.TRACE_USER_ID]: userId,
+        [LangfuseOtelSpanAttributes.VERSION]: entry.session.version,
+        // leave input/output empty to save space, we are just interested in costs
+        [LangfuseOtelSpanAttributes.TRACE_INPUT]: "{}",
+        [LangfuseOtelSpanAttributes.TRACE_OUTPUT]: "{}",
+        [LangfuseOtelSpanAttributes.TRACE_TAGS]: serializeValue(
+          [entry.session.agent, userId, projectId].filter(
+            (tag): tag is string => Boolean(tag),
+          ),
+        ),
+        ...flattenTraceMetadata(getSessionMetadata(entry)),
+      };
 
-      for (const part of message.parts) {
-        if (part.type !== "tool") continue;
+      const spans: OtelSpan[] = [
+        {
+          traceId,
+          spanId: rootSpanId,
+          name: entry.session.title || entry.session.slug || "session",
+          kind: 1,
+          startTimeUnixNano: toUnixNano(entry.session.time.created),
+          endTimeUnixNano: toUnixNano(endTime),
+          attributes: toOtelAttributes(rootAttributes),
+          status: {},
+        },
+      ];
 
-        const state = part.state;
-        const hasTime = "time" in state;
-        const endTime =
-          hasTime && "end" in state.time ? state.time.end : undefined;
-        generation.span({
-          id: stableId(`tool:${part.id}`),
-          name: `tool ${part.tool}`,
-          startTime: hasTime ? toDate(state.time.start) : undefined,
-          endTime: toDate(endTime),
-          input: "input" in state ? state.input : undefined,
-          output:
-            state.status === "completed"
-              ? state.output
-              : state.status === "error"
-                ? state.error
-                : undefined,
-          metadata: {
-            opencode: { part },
-            attributes: {
-              "service.name": "opencode",
-              "gen_ai.operation.name": "execute_tool",
-              "gen_ai.tool.name": part.tool,
-              "gen_ai.tool.call.id": part.callID,
-              "opencode.session.id": entry.session.id,
-              "opencode.message.id": message.info.id,
-              "opencode.part.id": part.id,
-              "opencode.tool.status": state.status,
-            },
-          },
-          level: state.status === "error" ? "ERROR" : "DEFAULT",
-          statusMessage: state.status,
+      for (const message of entry.messages) {
+        const generationSpanId = stableSpanId(`generation:${message.info.id}`);
+        spans.push({
+          traceId,
+          spanId: generationSpanId,
+          parentSpanId: rootSpanId,
+          name: `${message.info.providerID}/${message.info.modelID}`,
+          kind: 1,
+          startTimeUnixNano: toUnixNano(message.info.time.created),
+          endTimeUnixNano: toUnixNano(message.info.time.completed),
+          attributes: toOtelAttributes(
+            createObservationAttributes("generation", {
+              model: message.info.modelID,
+              modelParameters: {
+                provider: message.info.providerID,
+                mode: message.info.mode,
+                ...((message.info.agent ?? entry.session.agent)
+                  ? { agent: message.info.agent ?? entry.session.agent }
+                  : {}),
+                ...((message.info.variant ?? entry.session.model?.variant)
+                  ? {
+                      variant:
+                        message.info.variant ?? entry.session.model?.variant,
+                    }
+                  : {}),
+              },
+              // omit input.parts, output.parts, output.toolCalls when textMode is true
+              input: {
+                role: message.info.role,
+                parentMessageId: message.info.parentID,
+                parts: textMode
+                  ? []
+                  : message.parts.filter(
+                      (part) =>
+                        part.type === "step-start" || part.type === "file",
+                    ),
+              },
+              output: {
+                role: message.info.role,
+                parts: textMode
+                  ? []
+                  : [
+                      ...getReasoningOutput(message.parts),
+                      ...getTextOutput(message.parts),
+                    ],
+                toolCalls: textMode ? [] : getToolCalls(message.parts),
+                finishReason: message.info.finish,
+              },
+              usageDetails: getUsageDetails(message.info.tokens),
+              costDetails: getCostDetails(message.info.cost),
+              metadata: getMessageMetadata(entry, message),
+              level: message.info.error ? "ERROR" : "DEFAULT",
+              statusMessage: message.info.error
+                ? JSON.stringify(message.info.error)
+                : message.info.finish,
+            }),
+          ),
+          status: message.info.error ? { code: 2 } : {},
         });
-      }
-    }
-  }
 
-  await langfuse.flushAsync();
+        for (const part of message.parts) {
+          if (part.type !== "tool") continue;
+
+          const state = part.state;
+          const hasTime = "time" in state;
+          const toolEndTime =
+            hasTime && "end" in state.time ? state.time.end : undefined;
+          spans.push({
+            traceId,
+            spanId: stableSpanId(`tool:${part.id}`),
+            parentSpanId: generationSpanId,
+            name: `tool ${part.tool}`,
+            kind: 1,
+            startTimeUnixNano: hasTime
+              ? toUnixNano(state.time.start)
+              : undefined,
+            endTimeUnixNano: toUnixNano(toolEndTime),
+            attributes: toOtelAttributes(
+              createObservationAttributes("span", {
+                input: "input" in state ? state.input : undefined,
+                output:
+                  state.status === "completed"
+                    ? state.output
+                    : state.status === "error"
+                      ? state.error
+                      : undefined,
+                metadata: {
+                  opencode: { part },
+                  attributes: {
+                    "service.name": "opencode",
+                    "gen_ai.operation.name": "execute_tool",
+                    "gen_ai.tool.name": part.tool,
+                    "gen_ai.tool.call.id": part.callID,
+                    "opencode.session.id": entry.session.id,
+                    "opencode.message.id": message.info.id,
+                    "opencode.part.id": part.id,
+                    "opencode.tool.status": state.status,
+                  },
+                },
+                level: state.status === "error" ? "ERROR" : "DEFAULT",
+                statusMessage: state.status,
+              }),
+            ),
+            status: state.status === "error" ? { code: 2 } : {},
+          });
+        }
+      }
+
+      return {
+        resource: {
+          attributes: toOtelAttributes({
+            "service.name": "opencode",
+            "service.version": entry.session.version,
+          }),
+        },
+        scopeSpans: [
+          {
+            scope: { name: LANGFUSE_TRACER_NAME, version: LANGFUSE_SDK_VERSION },
+            spans,
+          },
+        ],
+      };
+    },
+  );
+
+  await langfuse.api.opentelemetry.exportTraces(
+    { resourceSpans },
+    { headers: { "x-langfuse-ingestion-version": "4" } },
+  );
 };
 
 export const PytcSessionLog: Plugin = async ({ client }) => {
@@ -480,14 +585,10 @@ export const PytcSessionLog: Plugin = async ({ client }) => {
     }
   }
 
-  const langfuse = new Langfuse({
+  const langfuse = new LangfuseClient({
     secretKey,
     publicKey,
     baseUrl,
-    sdkIntegration: "opencode-pytc-plugin",
-  });
-  langfuse.on("error", () => {
-    console.error(LANGFUSE_UNREACHABLE);
   });
 
   if (await isLangfuseReachable(langfuse)) {
@@ -561,7 +662,7 @@ export const PytcSessionLog: Plugin = async ({ client }) => {
           console.error(LANGFUSE_UNREACHABLE);
           return;
         }
-        await langfuse.shutdownAsync();
+        await langfuse.shutdown();
       } catch {
         console.error(LANGFUSE_UNREACHABLE);
       }

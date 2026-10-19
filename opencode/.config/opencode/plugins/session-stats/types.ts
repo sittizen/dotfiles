@@ -226,7 +226,7 @@ export type LangfuseTraceSummary = {
 };
 
 export type LangfuseSource = {
-  /** All traces Argo filed under the root session id, filtered by user when known. */
+  /** All traces the PyTC producer filed under the root session id, filtered by user when known. */
   getTraces(rootSessionId: string, userId: string | undefined): Promise<LangfuseTraceSummary[]>;
   /** Full observation set for one trace. */
   getObservations(traceId: string): Promise<UnknownObservation[]>;

@@ -212,7 +212,7 @@ export const renderReport = (report: SessionStatsReport): string => {
   // 13. footnote
   lines.push("## Data sources");
   lines.push(
-    "- Tokens, cost, and models are read from Langfuse (Argo telemetry); tool final states and the session tree are read from OpenCode.",
+    "- Tokens, cost, and models are read from Langfuse (PyTC telemetry); tool final states and the session tree are read from OpenCode.",
   );
   lines.push(
     `- Turns = number of assistant messages recorded by OpenCode for the session. Token totals are input + output + cache read + cache write (reasoning tokens are not displayed). Cache/context ratios render n/a when the denominator is 0 or the model limit is unknown.`,

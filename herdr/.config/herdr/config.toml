@@ -54,7 +54,7 @@ description = "btop system monitor"
 [[keys.command]]
 key = "ctrl+f2"
 type = "popup"
-command = "cd ~/Documents && kpcli --kdb=uris_and_secrets.kdbx"
+command = "cd ~/Documents && kpcli --xclipsel clipboard --kdb=uris_and_secrets.kdbx"
 width = "90%"
 height = "90%"
 description = "kpcli password manager"

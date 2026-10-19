@@ -14,7 +14,7 @@ import { matchesCommand, parseArguments, SESSION_STATS_COMMAND } from "./session
 import { buildReport, collectLangfuse } from "./session-stats/aggregate";
 import { FatalStatsError, UsageError, describeError } from "./session-stats/errors";
 import { renderFatalError, renderReport, renderUsageError } from "./session-stats/render";
-import { createLangfuseSource, createOpenCodeSource, loadArgoLangfuseConfig } from "./session-stats/sources";
+import { createLangfuseSource, createOpenCodeSource, loadPytcLangfuseConfig } from "./session-stats/sources";
 import type {
   LangfuseSource,
   OpenCodeSource,
@@ -55,11 +55,11 @@ export const createTuiPlugin = (deps: SessionStatsDeps = {}): TuiPluginModule =>
     const createOpenCode = deps.createOpenCode ?? createOpenCodeSource;
 
     let langfuseSource: (LangfuseSource & { dispose: () => Promise<void> }) | undefined;
-    let langfuseConfig: ReturnType<typeof loadArgoLangfuseConfig> | undefined;
+    let langfuseConfig: ReturnType<typeof loadPytcLangfuseConfig> | undefined;
     let inFlight: Promise<void> = Promise.resolve();
 
     const getLangfuse = () => {
-      langfuseConfig ??= loadArgoLangfuseConfig();
+      langfuseConfig ??= loadPytcLangfuseConfig();
       langfuseSource ??= createLangfuse(langfuseConfig);
       return { source: langfuseSource, userId: langfuseConfig.userId };
     };

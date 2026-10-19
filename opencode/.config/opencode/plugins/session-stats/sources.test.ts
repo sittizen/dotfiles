@@ -1,10 +1,10 @@
 import { describe, expect, test } from "bun:test";
+import type { GetObservationsV2Request, ObservationsV2Response } from "@langfuse/core";
 import { FatalStatsError } from "./errors";
 import {
   createLangfuseSource,
   createOpenCodeSource,
-  installWebStorageShim,
-  loadArgoLangfuseConfig,
+  loadPytcLangfuseConfig,
   stableId,
   traceIdForSession,
 } from "./sources";
@@ -120,75 +120,96 @@ describe("createOpenCodeSource", () => {
 // Langfuse source adapter (hermetic: fake module injected through the loader)
 // ---------------------------------------------------------------------------
 
-const fakeLangfuseModule = (api: {
-  traceList: (query: Record<string, unknown>) => Promise<{ data?: unknown; meta?: unknown }>;
-  traceGet: (traceId: string) => Promise<{ observations?: unknown[] }>;
-}) => ({
-  default: class {
-    api = api;
-    shutdownAsync = async (): Promise<void> => undefined;
+type FakeGetMany = (query?: GetObservationsV2Request) => Promise<ObservationsV2Response>;
+
+const fakeLangfuseModule = (getMany: FakeGetMany) => ({
+  LangfuseClient: class {
+    api = { observations: { getMany } };
+    shutdown = async (): Promise<void> => undefined;
   },
 });
 
-const sourceWith = (api: Parameters<typeof fakeLangfuseModule>[0]) =>
+const sourceWith = (getMany: FakeGetMany) =>
   createLangfuseSource(
     { publicKey: "pk", secretKey: "sk", baseUrl: "http://lf", userId: "u" },
-    { loadModule: async () => fakeLangfuseModule(api) },
+    { loadModule: async () => fakeLangfuseModule(getMany) },
   );
 
+const response = (data: unknown[], meta: Record<string, unknown> = {}): ObservationsV2Response =>
+  ({ data, meta }) as unknown as ObservationsV2Response;
+
 describe("createLangfuseSource", () => {
-  test("paginates traces by session id and user", async () => {
-    const requested: Array<Record<string, unknown>> = [];
-    const source = sourceWith({
-      traceList: async (query) => {
-        requested.push(query);
-        if ((query.page as number) === 1) {
-          return {
-            data: [{ id: "trc_1", sessionId: "ses_root", userId: "u" }, { junk: true }],
-            meta: { page: 1, limit: 50, totalItems: 1, totalPages: 2 },
-          };
-        }
-        return { data: [], meta: { page: 2, limit: 50, totalItems: 1, totalPages: 2 } };
-      },
-      traceGet: async () => ({ observations: [] }),
+  test("paginates observations by session id and user, deriving traces", async () => {
+    const requested: Array<GetObservationsV2Request | undefined> = [];
+    const source = sourceWith(async (query) => {
+      requested.push(query);
+      if (!query?.cursor) {
+        return response(
+          [
+            { id: "obs_1", traceId: "trc_1", sessionId: "ses_root", userId: "u" },
+            { id: "obs_2", traceId: "trc_1", sessionId: "ses_root", userId: "u" },
+            { id: "obs_3", traceId: "trc_2", sessionId: "ses_root", userId: "u" },
+            { junk: true },
+          ],
+          { cursor: "next" },
+        );
+      }
+      return response([]);
     });
     const traces = await source.getTraces("ses_root", "u");
-    expect(traces).toEqual([{ id: "trc_1", sessionId: "ses_root", userId: "u", metadata: undefined }]);
-    expect(requested[0]).toMatchObject({ sessionId: "ses_root", userId: "u", page: 1, limit: 50 });
+    expect(traces).toEqual([
+      { id: "trc_1", sessionId: "ses_root", userId: "u", metadata: undefined },
+      { id: "trc_2", sessionId: "ses_root", userId: "u", metadata: undefined },
+    ]);
+    expect(requested[0]).toMatchObject({ sessionId: "ses_root", userId: "u", limit: 1000 });
+    expect(requested[1]).toMatchObject({ cursor: "next" });
     expect(requested).toHaveLength(2);
   });
 
-  test("stops on a short page when pagination metadata is absent", async () => {
-    const requested: Array<Record<string, unknown>> = [];
-    const source = sourceWith({
-      traceList: async (query) => {
-        requested.push(query);
-        return { data: [{ id: `trc_${query.page}`, sessionId: "ses_root", userId: "u" }] };
-      },
-      traceGet: async () => ({ observations: [] }),
+  test("stops when the response carries no cursor", async () => {
+    const requested: Array<GetObservationsV2Request | undefined> = [];
+    const source = sourceWith(async (query) => {
+      requested.push(query);
+      return response([{ id: "obs_1", traceId: "trc_1", sessionId: "ses_root", userId: "u" }]);
     });
     const traces = await source.getTraces("ses_root", "u");
     expect(requested).toHaveLength(1);
     expect(traces).toEqual([{ id: "trc_1", sessionId: "ses_root", userId: "u", metadata: undefined }]);
   });
 
-  test("reads observations for a trace", async () => {
-    const source = sourceWith({
-      traceList: async () => ({ data: [] }),
-      traceGet: async (traceId) => ({
-        observations: [{ id: `obs_${traceId}`, type: "GENERATION" }, { broken: true }],
-      }),
-    });
+  test("reads observations for a trace and drops records without an id", async () => {
+    const source = sourceWith(async () =>
+      response([
+        {
+          id: "obs_trc_1",
+          type: "GENERATION",
+          metadata: { attributes: { "opencode.session.id": "ses_root" } },
+        },
+        { broken: true },
+      ]),
+    );
     const observations = await source.getObservations("trc_1");
-    expect(observations).toEqual([{ id: "obs_trc_1", type: "GENERATION" }]);
+    expect(observations).toEqual([
+      {
+        id: "obs_trc_1",
+        type: "GENERATION",
+        name: null,
+        startTime: null,
+        endTime: null,
+        model: null,
+        modelParameters: null,
+        usageDetails: null,
+        costDetails: null,
+        metadata: { attributes: { "opencode.session.id": "ses_root" } },
+        level: null,
+        statusMessage: null,
+      },
+    ]);
   });
 
   test("trace query failures are fatal", async () => {
-    const source = sourceWith({
-      traceList: async () => {
-        throw new Error("ECONNREFUSED");
-      },
-      traceGet: async () => ({ observations: [] }),
+    const source = sourceWith(async () => {
+      throw new Error("ECONNREFUSED");
     });
     try {
       await source.getTraces("ses_root", "u");
@@ -201,11 +222,8 @@ describe("createLangfuseSource", () => {
   });
 
   test("observation query failures are fatal", async () => {
-    const source = sourceWith({
-      traceList: async () => ({ data: [] }),
-      traceGet: async () => {
-        throw new Error("timeout");
-      },
+    const source = sourceWith(async () => {
+      throw new Error("timeout");
     });
     try {
       await source.getObservations("trc_1");
@@ -217,42 +235,39 @@ describe("createLangfuseSource", () => {
   });
 
   test("dispose is safe to call repeatedly", async () => {
-    const source = sourceWith({
-      traceList: async () => ({ data: [] }),
-      traceGet: async () => ({ observations: [] }),
-    });
+    const source = sourceWith(async () => response([]));
     await source.dispose();
     await source.dispose();
   });
 });
 
 describe("stableId", () => {
-  test("matches the Argo derivation", () => {
+  test("matches the PyTC derivation", () => {
     expect(traceIdForSession("ses_1")).toBe(stableId("trace:ses_1"));
-    expect(traceIdForSession("ses_1")).toHaveLength(36);
+    expect(traceIdForSession("ses_1")).toHaveLength(32);
     expect(traceIdForSession("ses_1")).toBe(traceIdForSession("ses_1"));
     expect(traceIdForSession("ses_1")).not.toBe(traceIdForSession("ses_2"));
   });
 });
 
-describe("loadArgoLangfuseConfig", () => {
+describe("loadPytcLangfuseConfig", () => {
   test("fails fatally when nothing is configured", () => {
     const originals = {
       XDG_CONFIG_HOME: process.env.XDG_CONFIG_HOME,
-      ARGO_LANGFUSE_PUBLIC_KEY: process.env.ARGO_LANGFUSE_PUBLIC_KEY,
-      ARGO_LANGFUSE_SECRET_KEY: process.env.ARGO_LANGFUSE_SECRET_KEY,
-      ARGO_LANGFUSE_BASE_URL: process.env.ARGO_LANGFUSE_BASE_URL,
-      ARGO_USER: process.env.ARGO_USER,
+      PYTC_LANGFUSE_PUBLIC_KEY: process.env.PYTC_LANGFUSE_PUBLIC_KEY,
+      PYTC_LANGFUSE_SECRET_KEY: process.env.PYTC_LANGFUSE_SECRET_KEY,
+      PYTC_LANGFUSE_BASE_URL: process.env.PYTC_LANGFUSE_BASE_URL,
+      PYTC_USER: process.env.PYTC_USER,
     };
     // Point the config lookup at a guaranteed-empty directory so the host's
-    // real ~/.config/argo/config.json cannot leak in.
+    // real ~/.config/pytc/config.json cannot leak in.
     process.env.XDG_CONFIG_HOME = "/tmp/pytc-session-stats-test-empty";
-    delete process.env.ARGO_LANGFUSE_PUBLIC_KEY;
-    delete process.env.ARGO_LANGFUSE_SECRET_KEY;
-    delete process.env.ARGO_LANGFUSE_BASE_URL;
-    delete process.env.ARGO_USER;
+    delete process.env.PYTC_LANGFUSE_PUBLIC_KEY;
+    delete process.env.PYTC_LANGFUSE_SECRET_KEY;
+    delete process.env.PYTC_LANGFUSE_BASE_URL;
+    delete process.env.PYTC_USER;
     try {
-      loadArgoLangfuseConfig();
+      loadPytcLangfuseConfig();
       throw new Error("expected FatalStatsError");
     } catch (error) {
       expect(error).toBeInstanceOf(FatalStatsError);
@@ -265,32 +280,5 @@ describe("loadArgoLangfuseConfig", () => {
         process.env[key] = value;
       }
     }
-  });
-});
-
-describe("installWebStorageShim", () => {
-  test("installs a working in-memory localStorage when missing", () => {
-    const globalScope = globalThis as { localStorage?: unknown };
-    const original = globalScope.localStorage;
-    delete globalScope.localStorage;
-    try {
-      expect(globalScope.localStorage).toBeUndefined();
-      installWebStorageShim();
-      const shim = globalScope.localStorage as Storage;
-      expect(typeof shim?.setItem).toBe("function");
-      shim.setItem("k", "v");
-      expect(shim.getItem("k")).toBe("v");
-      shim.removeItem("k");
-      expect(shim.getItem("k")).toBeNull();
-    } finally {
-      if (original === undefined) delete globalScope.localStorage;
-      else globalScope.localStorage = original;
-    }
-  });
-
-  test("leaves an existing localStorage untouched", () => {
-    const globalScope = globalThis as { localStorage?: unknown };
-    installWebStorageShim();
-    expect(globalScope.localStorage).toBeDefined();
   });
 });

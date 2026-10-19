@@ -3,6 +3,11 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
+import type {
+  GetObservationsV2Request,
+  ObservationV2,
+  ObservationsV2Response,
+} from "@langfuse/core";
 import { FatalStatsError, describeError } from "./errors";
 import type {
   LangfuseConfig,
@@ -17,14 +22,14 @@ import type {
 } from "./types";
 
 // ---------------------------------------------------------------------------
-// Argo configuration (same lookup rules as PytcSessionLog.ts, intentionally not
-// imported from it — Argo must stay a telemetry-only module).
+// PyTC configuration (same lookup rules as PytcSessionLog.ts, intentionally not
+// imported from it — the telemetry producer must stay a separate module).
 // ---------------------------------------------------------------------------
 
-const argoConfigPath = (): string =>
-  join(process.env.XDG_CONFIG_HOME ?? join(homedir(), ".config"), "argo", "config.json");
+const pytcConfigPath = (): string =>
+  join(process.env.XDG_CONFIG_HOME ?? join(homedir(), ".config"), "pytc", "config.json");
 
-type ArgoConfigFile = {
+type PytcConfigFile = {
   user?: string;
   langfuse?: {
     secret_key?: string;
@@ -35,12 +40,12 @@ type ArgoConfigFile = {
 
 const resolveUserId = (): string | undefined => {
   try {
-    const cfg = JSON.parse(readFileSync(argoConfigPath(), "utf-8")) as ArgoConfigFile;
+    const cfg = JSON.parse(readFileSync(pytcConfigPath(), "utf-8")) as PytcConfigFile;
     if (typeof cfg.user === "string" && cfg.user.length > 0) return cfg.user;
   } catch {
     // fall through
   }
-  const envUser = process.env.ARGO_USER;
+  const envUser = process.env.PYTC_USER;
   if (typeof envUser === "string" && envUser.length > 0) return envUser;
   try {
     return execSync("whoami", { encoding: "utf-8" }).trim();
@@ -50,45 +55,41 @@ const resolveUserId = (): string | undefined => {
 };
 
 /**
- * Load Langfuse credentials exactly like the Argo producer does:
- * `~/.config/argo/config.json` first, then `ARGO_LANGFUSE_*` environment
+ * Load Langfuse credentials exactly like the PyTC telemetry producer does:
+ * `~/.config/pytc/config.json` first, then `PYTC_LANGFUSE_*` environment
  * variables. Missing credentials are fatal — Langfuse is required.
  */
-export const loadArgoLangfuseConfig = (): LangfuseConfig => {
+export const loadPytcLangfuseConfig = (): LangfuseConfig => {
   let publicKey: string | undefined;
   let secretKey: string | undefined;
   let baseUrl: string | undefined;
   try {
-    const cfg = JSON.parse(readFileSync(argoConfigPath(), "utf-8")) as ArgoConfigFile;
+    const cfg = JSON.parse(readFileSync(pytcConfigPath(), "utf-8")) as PytcConfigFile;
     publicKey = cfg.langfuse?.public_key;
     secretKey = cfg.langfuse?.secret_key;
     baseUrl = cfg.langfuse?.base_url;
   } catch {
     // fall through to environment
   }
-  publicKey = publicKey ?? process.env.ARGO_LANGFUSE_PUBLIC_KEY;
-  secretKey = secretKey ?? process.env.ARGO_LANGFUSE_SECRET_KEY;
-  baseUrl = baseUrl ?? process.env.ARGO_LANGFUSE_BASE_URL;
+  publicKey = publicKey ?? process.env.PYTC_LANGFUSE_PUBLIC_KEY;
+  secretKey = secretKey ?? process.env.PYTC_LANGFUSE_SECRET_KEY;
+  baseUrl = baseUrl ?? process.env.PYTC_LANGFUSE_BASE_URL;
   if (!publicKey || !secretKey || !baseUrl) {
     throw new FatalStatsError(
       "langfuse",
-      "Langfuse is not configured: set langfuse keys in ~/.config/argo/config.json or ARGO_LANGFUSE_PUBLIC_KEY/ARGO_LANGFUSE_SECRET_KEY/ARGO_LANGFUSE_BASE_URL.",
+      "Langfuse is not configured: set langfuse keys in ~/.config/pytc/config.json or PYTC_LANGFUSE_PUBLIC_KEY/PYTC_LANGFUSE_SECRET_KEY/PYTC_LANGFUSE_BASE_URL.",
     );
   }
   return { publicKey, secretKey, baseUrl, userId: resolveUserId() };
 };
 
 // ---------------------------------------------------------------------------
-// Deterministic ids (same derivation Argo uses when filing telemetry).
+// Deterministic ids (same derivation the PyTC producer uses when filing
+// telemetry). Trace ids are 32-hex OpenTelemetry trace ids.
 // ---------------------------------------------------------------------------
 
-export const stableId = (value: string): string => {
-  const hex = createHash("sha256").update(value).digest("hex").slice(0, 32);
-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-4${hex.slice(13, 16)}-${(
-    (Number.parseInt(hex.slice(16, 18), 16) & 0x3f) |
-    0x80
-  ).toString(16)}${hex.slice(18, 20)}-${hex.slice(20, 32)}`;
-};
+export const stableId = (value: string): string =>
+  createHash("sha256").update(value).digest("hex").slice(0, 32);
 
 export const traceIdForSession = (sessionId: string): string => stableId(`trace:${sessionId}`);
 
@@ -215,80 +216,54 @@ export const createOpenCodeSource = (client: V2Client): OpenCodeSource => ({
 });
 
 // ---------------------------------------------------------------------------
-// Langfuse source adapter (public API through the langfuse SDK).
+// Langfuse source adapter (public API through the @langfuse/client SDK).
+// Reads use the observations v2 endpoint (the only read path in JS SDK v5+).
 // ---------------------------------------------------------------------------
 
-type LangfuseApiClient = {
-  traceList: (query: Record<string, unknown>) => Promise<{ data?: unknown; meta?: unknown }>;
-  traceGet: (traceId: string) => Promise<{ observations?: unknown[] }>;
-};
-
-const PAGE_SIZE = 50;
-
-const asTraceSummaries = (data: unknown): LangfuseTraceSummary[] => {
-  if (!Array.isArray(data)) return [];
-  return data.flatMap((item): LangfuseTraceSummary[] => {
-    if (!item || typeof item !== "object") return [];
-    const record = item as Record<string, unknown>;
-    if (typeof record.id !== "string") return [];
-    return [
-      {
-        id: record.id,
-        sessionId: typeof record.sessionId === "string" ? record.sessionId : undefined,
-        userId: typeof record.userId === "string" ? record.userId : undefined,
-        metadata: record.metadata,
-      },
-    ];
-  });
-};
-
-/**
- * The langfuse SDK dereferences `localStorage` inside its storage bootstrap
- * even when `persistence: "memory"` is requested (its `typeof window` guard is
- * broken and evaluates the identifier unconditionally when `window` exists).
- * The opencode TUI process defines `window` but no DOM storage, so an
- * in-memory shim must be installed before the SDK import.
- */
-export const installWebStorageShim = (): void => {
-  const globalScope = globalThis as { localStorage?: unknown };
-  if (typeof globalScope.localStorage === "undefined") {
-    const cache = new Map<string, string>();
-    globalScope.localStorage = {
-      getItem: (key: string) => cache.get(key) ?? null,
-      setItem: (key: string, value: string) => void cache.set(key, String(value)),
-      removeItem: (key: string) => void cache.delete(key),
-      clear: () => cache.clear(),
-      key: () => null,
-      length: 0,
-    };
-  }
+type LangfuseObservationsApi = {
+  getMany: (query?: GetObservationsV2Request) => Promise<ObservationsV2Response>;
 };
 
 type LangfuseInstance = {
-  api: LangfuseApiClient;
-  shutdownAsync?: () => Promise<void>;
+  api: { observations: LangfuseObservationsApi };
+  shutdown?: () => Promise<void>;
 };
 
 type LangfuseConstructor = new (options: {
   publicKey: string;
   secretKey: string;
   baseUrl: string;
-  /** The TUI process has no DOM storage; the SDK defaults to localStorage. */
-  persistence: "memory";
 }) => LangfuseInstance;
 
-/** Injectable module loader so tests can supply a fake langfuse SDK. */
-export type LangfuseModuleLoader = () => Promise<{ default: LangfuseConstructor }>;
+/** Injectable module loader so tests can supply a fake Langfuse SDK. */
+export type LangfuseModuleLoader = () => Promise<{ LangfuseClient: LangfuseConstructor }>;
 
-const defaultModuleLoader: LangfuseModuleLoader = async () => import("langfuse");
+const defaultModuleLoader: LangfuseModuleLoader = async () => import("@langfuse/client");
 
-const asPagination = (meta: unknown): { page: number; totalPages: number } => {
-  const record = (meta && typeof meta === "object" ? meta : {}) as Record<string, unknown>;
-  return {
-    page: typeof record.page === "number" ? record.page : 1,
-    totalPages: typeof record.totalPages === "number" ? record.totalPages : 1,
-  };
-};
+const PAGE_SIZE = 1000;
+
+// Field groups needed to satisfy `UnknownObservation` and the reconciliation
+// metadata keys (`metadata`, `model`, `usage`, `time`).
+const OBSERVATION_FIELDS = "core,basic,time,io,metadata,model,usage,trace_context";
+
+// The `attributes` metadata object carries the OpenCode ids used to reconcile
+// observations; ask the API not to truncate it (values over 200 chars).
+const EXPAND_METADATA = "attributes";
+
+const asObservation = (observation: ObservationV2): UnknownObservation => ({
+  id: observation.id,
+  type: typeof observation.type === "string" ? observation.type : "UNKNOWN",
+  name: observation.name ?? null,
+  startTime: observation.startTime ?? null,
+  endTime: observation.endTime ?? null,
+  model: observation.model ?? null,
+  modelParameters: (observation.modelParameters ?? null) as Record<string, unknown> | null,
+  usageDetails: observation.usageDetails ?? null,
+  costDetails: observation.costDetails ?? null,
+  metadata: observation.metadata,
+  level: observation.level ?? null,
+  statusMessage: observation.statusMessage ?? null,
+});
 
 export const createLangfuseSource = (
   config: LangfuseConfig,
@@ -300,15 +275,13 @@ export const createLangfuseSource = (
   const instance = async (): Promise<LangfuseInstance> => {
     if (!instancePromise) {
       instancePromise = (async () => {
-        installWebStorageShim();
         const module = await loadModule();
-        const instance = new module.default({
+        const instance = new module.LangfuseClient({
           publicKey: config.publicKey,
           secretKey: config.secretKey,
           baseUrl: config.baseUrl,
-          persistence: "memory",
         });
-        if (!instance.api) {
+        if (!instance.api?.observations) {
           throw new FatalStatsError("langfuse", "Langfuse SDK did not expose its API client.");
         }
         return instance;
@@ -317,49 +290,62 @@ export const createLangfuseSource = (
     return instancePromise;
   };
 
+  /** Page through the observations v2 endpoint with cursor pagination. */
+  const fetchObservations = async (query: GetObservationsV2Request): Promise<ObservationV2[]> => {
+    const api = (await instance()).api.observations;
+    const observations: ObservationV2[] = [];
+    let cursor: string | undefined;
+    try {
+      do {
+        const result = await api.getMany({
+          ...query,
+          fields: OBSERVATION_FIELDS,
+          expandMetadata: EXPAND_METADATA,
+          limit: PAGE_SIZE,
+          ...(cursor ? { cursor } : {}),
+        });
+        observations.push(...(result.data ?? []));
+        cursor = result.meta?.cursor;
+      } while (cursor);
+    } catch (error) {
+      throw new FatalStatsError("langfuse", `Langfuse observation query failed: ${describeError(error)}`);
+    }
+    return observations;
+  };
+
   return {
     getTraces: async (rootSessionId, userId) => {
-      const api = (await instance()).api;
-      const traces: LangfuseTraceSummary[] = [];
-      let page = 1;
-      let totalPages = 1;
-      try {
-        do {
-          const result = await api.traceList({ sessionId: rootSessionId, ...(userId ? { userId } : {}), page, limit: PAGE_SIZE });
-          const pageTraces = asTraceSummaries(result.data);
-          traces.push(...pageTraces);
-          if (result.meta === undefined || result.meta === null) {
-            // no pagination metadata: keep fetching while pages come back full
-            totalPages = pageTraces.length >= PAGE_SIZE ? page + 1 : page;
-          } else {
-            totalPages = asPagination(result.meta).totalPages;
-          }
-          page += 1;
-        } while (page <= totalPages);
-      } catch (error) {
-        throw new FatalStatsError("langfuse", `Langfuse trace query failed: ${describeError(error)}`);
+      const observations = await fetchObservations({
+        sessionId: rootSessionId,
+        ...(userId ? { userId } : {}),
+      });
+      // The producer files one trace per session and sets `sessionId` to the
+      // root session id, so distinct trace ids in the session are the traces.
+      const byTraceId = new Map<string, LangfuseTraceSummary>();
+      for (const observation of observations) {
+        const traceId = observation.traceId;
+        if (typeof traceId !== "string" || byTraceId.has(traceId)) continue;
+        byTraceId.set(traceId, {
+          id: traceId,
+          sessionId: typeof observation.sessionId === "string" ? observation.sessionId : undefined,
+          userId: typeof observation.userId === "string" ? observation.userId : undefined,
+          metadata: observation.metadata,
+        });
       }
-      return traces;
+      return [...byTraceId.values()];
     },
 
     getObservations: async (traceId) => {
-      const api = (await instance()).api;
-      let result: { observations?: unknown[] };
-      try {
-        result = await api.traceGet(traceId);
-      } catch (error) {
-        throw new FatalStatsError("langfuse", `Langfuse observation query failed for trace ${traceId}: ${describeError(error)}`);
-      }
-      return (result.observations ?? []).filter((observation): observation is UnknownObservation => {
-        if (!observation || typeof observation !== "object") return false;
-        return typeof (observation as { id?: unknown }).id === "string";
-      });
+      const observations = await fetchObservations({ traceId });
+      return observations
+        .filter((observation): observation is ObservationV2 => typeof observation.id === "string")
+        .map(asObservation);
     },
 
     dispose: async () => {
       try {
         const instance = await instancePromise;
-        await instance?.shutdownAsync?.();
+        await instance?.shutdown?.();
       } catch {
         // shutdown errors are not fatal for the report
       }

@@ -39,7 +39,7 @@
         "-y",
         "@playwright/mcp"
       ],
-      "enabled": false
+      "enabled": true
     },
     "context7": {
       "type": "remote",
@@ -54,12 +54,12 @@
   "permission": {
     "read": {
       "*": "allow",
-      "*docs/done/*": "deny",
+      "*docs/obsolete/*": "deny",
       "*docs/todo/*": "deny"
     },
     "edit": {
       "*": "allow",
-      "*docs/done/*": "deny",
+      "*docs/obsolete/*": "deny",
       "*docs/todo/*": "deny"
     }
   },
