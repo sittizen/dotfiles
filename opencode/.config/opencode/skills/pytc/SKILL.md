@@ -33,9 +33,9 @@ Helper: `scripts/pytc.sh` inside this skill directory
   it in session state). Never close a pre-existing pane or remove someone
   else's container, even if its name matches the requested project.
 - Project directories structure is valid only once mounted into containers.
-  **Every** `uv` command executed in container mutate host files:
-  Do not describe `uv` commands as read-only.
-  Do not run `uv` commands from outside a container.
+  **Never** run `uv` commands from outside a container.
+  **Every** `uv` command executed in container mutate host files;
+  do not describe `uv` commands as read-only.
 
 ## Supported actions routing
 

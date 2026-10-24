@@ -489,6 +489,20 @@ check_vault() {
   [[ -n "${VAULT_TOKEN:-}" ]] || die "VAULT_TOKEN is not set (never printed by this tool)"
 }
 
+# Toolchain image lives in the internal registry (run.sh: IMAGE_TAG); a project
+# with Dockerfile.pytc extends it as a project-suffixed image.
+PYTC_TC_IMAGE="registry-bpo.gmolapps.io/pycc/pytc"
+
+toolchain_image() { # OPT_PATH PJ_NAME -> image run.sh will actually use
+  local path="$1" pj="${2:-}" img
+  if [[ -f "$path/Dockerfile.pytc" ]]; then
+    img="$PYTC_TC_IMAGE-${pj:-$(basename "$path")}"
+  else
+    img="$PYTC_TC_IMAGE"
+  fi
+  printf '%s' "$img"
+}
+
 check_image() {
   docker image inspect "$1" >/dev/null 2>&1 || echo "pytc: warning: image $1 not found locally" >&2
 }
@@ -568,15 +582,15 @@ cmd_preflight() {
       if docker ps -a --format '{{.Names}}' | grep -Fxq "$container_name"; then
         die "container '$container_name' already exists; reuse it with 'docker exec -it $container_name zsh' or remove it with 'docker rm -f $container_name'"
       fi
-      check_image local/pytc
+      check_image "$(toolchain_image "$OPT_PATH" "$PJ_NAME")"
       check_port_collision "$(resolve_oc_port)"
       [[ -f "$OPT_PATH/.python-version" ]] || warn "no .python-version in project; container startup prechecks may fail"
       ;;
     run)
-      project_info; check_docker_daemon; check_vault; check_image local/pytc; check_opencode_pytc
+      project_info; check_docker_daemon; check_vault; check_image "$(toolchain_image "$OPT_PATH")"; check_opencode_pytc
       ;;
     publish)
-      project_info; check_docker_daemon; check_vault; check_image local/pytc
+      project_info; check_docker_daemon; check_vault; check_image "$PYTC_TC_IMAGE"
       local images_dir="$OPT_PATH/infrastructure/images" found=0 f
       [[ -d "$images_dir" ]] || die "images directory not found at $images_dir"
       for f in "$images_dir"/Dockerfile*; do if [[ -f "$f" ]]; then found=1; fi; done
