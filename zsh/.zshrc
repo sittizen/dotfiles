@@ -175,7 +175,8 @@ v() { # retrieves vault token
   if [[ "$(hostname)" == "leona" ]]; then
     export VAULT_TOKEN=$(cat ~/workspace/.uk)
   else
-    export VAULT_TOKEN=$(vault login -method=oidc -token-only 2>/dev/null)
+    # headless xdg-open shim: keeps the GitLab session, opens no browser tab
+    export VAULT_TOKEN=$(PATH="$HOME/.local/bin/vault-browser:$PATH" vault login -method=oidc -token-only 2>/dev/null)
   fi
 }
 

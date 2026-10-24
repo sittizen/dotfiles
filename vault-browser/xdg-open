@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+# xdg-open shim for `vault login -method=oidc`.
+#
+# Vault ignores $BROWSER and calls xdg-open directly, which pops a new tab in
+# the default browser on every login. This shim loads the OIDC URL in a
+# dedicated *headless* Chrome profile that keeps the GitLab login session, so
+# the authorize -> localhost:8250/oidc/callback redirect completes silently and
+# Chrome exits. No visible tab.
+#
+# Seed the session once (visible), then reuse it:
+#   google-chrome-stable --user-data-dir="$HOME/.config/vault-browser" https://gitlab.gruppomol.lcl
+#   # log in, then close the window.
+#
+# Env knobs:
+#   VAULT_BROWSER_PROFILE  profile dir (default ~/.config/vault-browser)
+#   VAULT_BROWSER_CHROME   chrome binary (default auto-detected)
+#   VAULT_BROWSER_VISIBLE  set to 1 to force a visible window (re-seed)
+set -euo pipefail
+
+REAL_XDG_OPEN=/usr/bin/xdg-open
+PROFILE="${VAULT_BROWSER_PROFILE:-$HOME/.config/vault-browser}"
+
+pick_chrome() {
+  if [[ -n "${VAULT_BROWSER_CHROME:-}" ]]; then
+    printf '%s\n' "$VAULT_BROWSER_CHROME"; return
+  fi
+  local c
+  for c in google-chrome-stable google-chrome brave-browser chromium chromium-browser; do
+    if command -v "$c" >/dev/null 2>&1; then printf '%s\n' "$c"; return; fi
+  done
+}
+
+# Pull the first http(s) argument; vault passes exactly one URL.
+URL=""
+for a in "$@"; do
+  case "$a" in
+    http://*|https://*) URL="$a"; break ;;
+  esac
+done
+
+# Not a web URL: behave like the real xdg-open.
+if [[ -z "$URL" ]]; then
+  exec "$REAL_XDG_OPEN" "$@"
+fi
+
+CHROME="$(pick_chrome)"
+if [[ -z "$CHROME" ]]; then
+  echo "vault-browser: no chrome/chromium found, falling back to xdg-open" >&2
+  exec "$REAL_XDG_OPEN" "$@"
+fi
+
+mkdir -p "$PROFILE"
+
+common_flags=(
+  --user-data-dir="$PROFILE"
+  --no-first-run
+  --no-default-browser-check
+  --disable-gpu
+)
+
+msg() { { echo "vault-browser: $*" >/dev/tty; } 2>/dev/null || echo "vault-browser: $*" >&2; }
+
+# Forced visible mode -> just open a normal window (used to re-seed).
+if [[ "${VAULT_BROWSER_VISIBLE:-0}" == "1" ]]; then
+  msg "opening visible browser to (re)authenticate GitLab..."
+  exec "$CHROME" "${common_flags[@]}" "$URL"
+fi
+
+# Headless attempt: follow redirects to the vault callback, print DOM, exit.
+DOM="$(mktemp)"
+trap 'rm -f "$DOM"' EXIT
+timeout 60 "$CHROME" --headless=new "${common_flags[@]}" --dump-dom "$URL" >"$DOM" 2>/dev/null || true
+
+# Session expired? GitLab served its sign-in page instead of redirecting.
+if grep -qE 'id="user_login"|/users/sign_in' "$DOM"; then
+  msg "GitLab session expired, opening visible window to re-login (one time)..."
+  exec "$CHROME" "${common_flags[@]}" "$URL"
+fi
+
+# Success (vault callback page loaded) or anything else: stay silent, exit.
+exit 0
