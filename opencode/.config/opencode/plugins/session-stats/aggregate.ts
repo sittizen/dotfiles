@@ -12,6 +12,7 @@ import type {
   NormalizedSession,
   NormalizedToolRecord,
   OpenCodeMessage,
+  OpenCodeSource,
   OpenCodeTree,
   ReportWarning,
   SessionStatsReport,
@@ -429,6 +430,33 @@ export const collectLangfuse = async (
     observationsByTraceId[trace.id] = await source.getObservations(trace.id);
   }
   return { traces, observationsByTraceId };
+};
+
+export type CollectReportInput = {
+  openCodeSource: OpenCodeSource;
+  langfuseSource: LangfuseSource;
+  userId: string | undefined;
+  sessionId: string;
+};
+
+/** Fetch both sources and build the deterministic report for a session tree. */
+export const collectReport = async ({
+  openCodeSource,
+  langfuseSource,
+  userId,
+  sessionId,
+}: CollectReportInput): Promise<SessionStatsReport> => {
+  const [tree, modelLimits, langfuse] = await Promise.all([
+    openCodeSource.getTree(sessionId),
+    openCodeSource.getModelLimits(),
+    collectLangfuse(langfuseSource, sessionId, userId),
+  ]);
+  return buildReport({
+    tree,
+    modelLimits,
+    traces: langfuse.traces,
+    observationsByTraceId: langfuse.observationsByTraceId,
+  });
 };
 
 export type { OpenCodeMessage, OpenCodeTree };

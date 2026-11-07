@@ -117,8 +117,10 @@ to the human rather than hiding them.
 Do not edit these files; if they are missing or invalid, report the error code
 and stop.
 
-- Global `${XDG_CONFIG_HOME:-$HOME/.config}/pytc/config.json`, mode `600`:
-  `{"portainer":{"base_url":"...","secret_key":"..."}}`.
+- Global config: Vault `kv/loc/<user>/conf_pytc` first, then
+  `${XDG_CONFIG_HOME:-$HOME/.config}/pytc/config.json` (mode `600`):
+  `{"portainer":{"base_url":"...","secret_key":"..."}}`. Using the local
+  fallback prints a warning to move the config into Vault.
 - Project `.pytc.json` in the project root:
   `{"portainer":{"stg_id":"...","prd_id":"..."}}`.
 - Project identity comes from `project.name` in `pyproject.toml`; run from the

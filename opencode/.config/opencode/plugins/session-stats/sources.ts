@@ -216,6 +216,42 @@ export const createOpenCodeSource = (client: V2Client): OpenCodeSource => ({
 });
 
 // ---------------------------------------------------------------------------
+// Server plugin adapter (v1 SDK client, path parameters).
+//
+// Server plugins receive a client whose session calls take `{ path: { id } }`.
+// This adapter exposes the flat v2 shape used by the TUI plugin so both entry
+// points share the same aggregation and rendering code.
+// ---------------------------------------------------------------------------
+
+type ServerResult<T> = Promise<{ data?: T; error?: unknown }>;
+
+export type ServerOpenCodeClient = {
+  session: {
+    get: (options: { path: { id: string } }) => ServerResult<OpenCodeSessionData>;
+    children: (options: { path: { id: string } }) => ServerResult<OpenCodeSessionData[]>;
+    messages: (options: { path: { id: string } }) => ServerResult<OpenCodeMessage[]>;
+  };
+  provider?: {
+    list: (options?: Record<string, unknown>) => ServerResult<{
+      all?: Array<{
+        id: string;
+        models?: Record<string, { id: string; limit?: { context?: number } }>;
+      }>;
+    }>;
+  };
+};
+
+export const createServerOpenCodeSource = (client: ServerOpenCodeClient): OpenCodeSource =>
+  createOpenCodeSource({
+    session: {
+      get: ({ sessionID }) => client.session.get({ path: { id: sessionID } }),
+      children: ({ sessionID }) => client.session.children({ path: { id: sessionID } }),
+      messages: ({ sessionID }) => client.session.messages({ path: { id: sessionID } }),
+    },
+    provider: client.provider ? { list: () => client.provider!.list() } : undefined,
+  });
+
+// ---------------------------------------------------------------------------
 // Langfuse source adapter (public API through the @langfuse/client SDK).
 // Reads use the observations v2 endpoint (the only read path in JS SDK v5+).
 // ---------------------------------------------------------------------------

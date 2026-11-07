@@ -75,7 +75,7 @@ pane_read_text() {
   herdr pane read "$1" --source recent-unwrapped --lines "${2:-$READ_LINES}" --format text 2>/dev/null || true
 }
 
-host_shell_ready() { # pane pytc_dir -> 0 if foreground looks like an idle host shell
+host_shell_ready() { # pane project_dir -> 0 if foreground looks like an idle host shell
   local pane="$1" dir="$2" info name argv0 cwd
   info=$(herdr pane process-info --pane "$pane" 2>/dev/null) || return 1
   name=$(jq -r '.result.process_info.foreground_processes[0].name // empty' <<<"$info")
@@ -88,11 +88,16 @@ host_shell_ready() { # pane pytc_dir -> 0 if foreground looks like an idle host 
 
 # ------------------------------------------------------------------ envelopes
 
+quote_word() { # word -> POSIX single-quoted token (safe for bash and zsh)
+  local w="$1" sq="'"
+  w=${w//"$sq"/"$sq\\$sq$sq"}
+  printf "'%s'" "$w"
+}
+
 quote_join() { # argv -> safely quoted command string
   local out="" t
   for t in "$@"; do
-    printf -v t '%q' "$t"
-    out+="$t "
+    out+="$(quote_word "$t") "
   done
   printf '%s' "${out% }"
 }
@@ -122,7 +127,7 @@ Usage: pytc.sh <command> [options]
 
 Session / pane:
   session-new [--pytc-dir DIR] [--path PROJECT]        create session, print id
-  pane-new <session> <label>                           create+label owned pane
+  pane-new <session> <label>                           create+label owned pane in project root
   state <session>                                      print session state
   close <session>                                      close owned pane
 
@@ -132,7 +137,7 @@ Host Herdr context:
   env-check <session> [tool ...]                       default tools: vault docker
 
 Shell lifecycle:
-  shell-launch <session> [-- extra run.sh args...]     submit wrapped run.sh launch
+  shell-launch <session> [-- extra args...]            submit project-local ./run.sh --action shell
   wait-ready <session> [--timeout SECS]                wait READY or HOST_RETURN (default 300)
   submit <session> --host|--container -- CMD...        submit command, print command id
   wait <session> <command-id> [--timeout SECS]         wait DONE marker (default 300)
@@ -175,7 +180,7 @@ cmd_session_new() {
 cmd_pane_new() {
   [[ $# -ge 2 ]] || die "pane-new <session> <label>"
   local s="$1" label="$2" dir layout cur w h direction out pane
-  dir=$(require_state "$s" pytc_dir)
+  dir=$(require_state "$s" path)
   layout=$(herdr pane layout --current 2>/dev/null) \
     || die "no herdr host context: 'herdr pane layout --current' failed"
   cur=$(jq -r '.result.layout.focused_pane_id // empty' <<<"$layout")
@@ -221,17 +226,15 @@ cmd_shell_launch() {
   pane=$(require_state "$s" pane)
   path=$(require_state "$s" path)
   sid=$(require_state "$s" session)
-  host_shell_ready "$pane" "$(require_state "$s" pytc_dir)" \
-    || die "owned pane $pane is not an idle host shell in $(require_state "$s" pytc_dir)"
-  local quoted_path quoted_sid
-  printf -v quoted_path '%q' "$path"
-  printf -v quoted_sid '%q' "$sid"
+  host_shell_ready "$pane" "$path" \
+    || die "owned pane $pane is not an idle host shell in project root $path"
+  local quoted_sid
+  quoted_sid=$(quote_word "$sid")
   for t in "$@"; do
-    printf -v t '%q' "$t"
-    extras+="$t "
+    extras+="$(quote_word "$t") "
   done
   local cmdtext
-  cmdtext="if PYTC_SKILL_SESSION=${quoted_sid} ./run.sh --action shell --path ${quoted_path} ${extras}; then rc=0; else rc=\$?; fi; builtin printf '\\n__PYTC_HOST_RETURN_%s_RC_%s__\\n' '${sid}' \"\$rc\""
+  cmdtext="if PYTC_SKILL_SESSION=${quoted_sid} ./run.sh --action shell ${extras}; then rc=0; else rc=\$?; fi; builtin printf '\\n__PYTC_HOST_RETURN_%s_RC_%s__\\n' '${sid}' \"\$rc\""
   st_set "$s" lifecycle "starting-container"
   herdr pane run "$pane" "$cmdtext" >/dev/null || die "herdr pane run failed for pane $pane"
   echo "submitted"
@@ -363,7 +366,7 @@ cmd_wait_host() {
   local pane sid regex matched rc rc_wait=0 dir
   pane=$(require_state "$s" pane)
   sid=$(require_state "$s" session)
-  dir=$(require_state "$s" pytc_dir)
+  dir=$(require_state "$s" path)
   regex="(?m)^__PYTC_HOST_RETURN_${sid}_RC_[0-9]+__\\r?$"
   matched=$(wait_alternation "$pane" "$regex" "$timeout") || rc_wait=$?
   if (( rc_wait != 0 )); then
@@ -525,7 +528,12 @@ check_port_collision() {
 
 check_opencode_pytc() {
   if [[ -d "$HOME/.config/opencode" && ! -d "$HOME/.config/pytc" ]]; then
-    die "host opencode config present but ~/.config/pytc is missing; run './run.sh --action install' to fix"
+    # A Vault-only PyTC config is enough; the local directory is optional.
+    if command -v vault >/dev/null 2>&1 \
+      && vault read -format json "kv/loc/$(id -un)/conf_pytc" >/dev/null 2>&1; then
+      return 0
+    fi
+    die "host opencode config present but ~/.config/pytc is missing; run the PyTC toolchain upgrade to fix"
   fi
 }
 
@@ -568,9 +576,20 @@ cmd_preflight() {
     esac
   done
 
-  [[ -d "$OPT_PYTC_DIR" ]] || die "pytc dir not found: $OPT_PYTC_DIR (set --pytc-dir or PYTC_DIR)"
-  OPT_PYTC_DIR=$(realpath "$OPT_PYTC_DIR")
-  [[ -x "$OPT_PYTC_DIR/run.sh" ]] || die "run.sh not executable at $OPT_PYTC_DIR/run.sh"
+  local project_actions=" shell run publish deploy devstack "
+  if [[ "$project_actions" == *" $ACTION "* ]]; then
+    [[ -n "$OPT_PATH" ]] || die "--path is required for action $ACTION"
+    [[ -d "$OPT_PATH" ]] || die "path is not a directory: $OPT_PATH"
+    OPT_PATH=$(realpath "$OPT_PATH")
+    [[ -x "$OPT_PATH/run.sh" ]] \
+      || die "project run.sh not executable at $OPT_PATH/run.sh (project actions must run from the project root)"
+    [[ -f "$OPT_PATH/pytc.sh" ]] \
+      || die "project pytc.sh not found at $OPT_PATH/pytc.sh (reinstall the project scripts with the PyTC toolchain)"
+  elif [[ "$ACTION" == "upgrade" || "$ACTION" == "pubself" ]]; then
+    [[ -d "$OPT_PYTC_DIR" ]] || die "pytc dir not found: $OPT_PYTC_DIR (set --pytc-dir or PYTC_DIR)"
+    OPT_PYTC_DIR=$(realpath "$OPT_PYTC_DIR")
+    [[ -x "$OPT_PYTC_DIR/run.sh" ]] || die "run.sh not executable at $OPT_PYTC_DIR/run.sh"
+  fi
 
   local container_name=""
   case "$ACTION" in

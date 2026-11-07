@@ -1,14 +1,18 @@
 ---
 name: pytc
-description: "Operate the PyTC toolchain run.sh from docker host through Herdr.
+description: "Operate PyTC project actions from the docker host through Herdr.
   Use for PyTC project checks, toolchain shells, local integration testing, publishing."
 ---
 
 # PyTC toolchain operation
 
-Operate the PyTC toolchain (`run.sh`) from the **host**, through Herdr panes.
-All protocol mechanics (command envelopes, quoting, markers, bounded waits)
-are handled by the bundled helper — never reconstruct them.
+Run PyTC project actions from the **project root**, using the project-local
+`./run.sh` script.
+
+
+Operate from the **host**, through Herdr panes. All protocol mechanics
+(command envelopes, quoting, markers, bounded waits) are handled by the
+bundled helper — never reconstruct them.
 
 Helper: `scripts/pytc.sh` inside this skill directory
 (`~/.config/opencode/skills/pytc/scripts/pytc.sh` when installed).
@@ -24,6 +28,8 @@ Helper: `scripts/pytc.sh` inside this skill directory
   refuse and explain. **Never print the VAULT_TOKEN**
 - Resolve `PYTC_DIR` from an explicit setting, defaulting to `$HOME/workspace/pytc`.
   Normalize `PYTC_DIR` and project paths to absolute paths before use.
+  `PYTC_DIR` is the toolchain checkout for maintenance, not the cwd for
+  project actions.
 - **Never** build command envelopes, marker regexes, or quoting yourself.
   Always call `pytc.sh submit` / `pytc.sh wait` etc. Every submission gets a
   fresh random command ID, including retries.
@@ -41,10 +47,10 @@ Helper: `scripts/pytc.sh` inside this skill directory
 
 | Action | Route | Notes |
 | --- | --- | --- |
-| `shell` | Owned Herdr pane | Full READY/HOST_RETURN lifecycle (below) |
-| `run` | Plain Bash (no pane) | `bash -c` one-shot; skips shell startup sync and zsh-only env; use the shell workflow when those are needed |
-| `publish` | Pane (host phase) | Needs unique DONE plus per-image publication evidence |
-| `devstack` | Pane | Attached Compose; readiness = service health, not log substrings; retain pane, implies the need of a running stack for successive tests |
+| `shell` | Owned Herdr pane in project root | `./run.sh --action shell`; full READY/HOST_RETURN lifecycle (below) |
+| `run` | Plain shell (no pane) | `./run.sh --action run "<command>"` ; use when a fast single check is needed. |
+| `publish` | Pane (host phase) | `./run.sh --action publish` needs unique DONE plus per-image publication evidence |
+| `devstack` | Pane | `./run.sh --action devstack` attached Compose; readiness = service health, not log substrings; retain pane, implies the need of a running stack for successive tests |
 
 ## Preflight
 
@@ -55,13 +61,16 @@ Always run first (it also validates host Herdr context):
   --path /absolute/project [--pytc-dir /absolute/pytc]
 ```
 
-It checks required tools presence, `run.sh` executability,
-project `pyproject.toml` name/version, Git branch, Docker daemon,
+It checks required tools presence, project-local `run.sh`/`pytc.sh`
+executability, project `pyproject.toml` name/version, Git branch, Docker daemon,
 derived container name validity and collisions (exact name match,
 including stopped containers — never adopt or remove),
 OpenCode config, opencode port collisions, and per-action files.
 
-The new pane does not inherit the agent's environment.
+The toolchain checkout (`PYTC_DIR`, default `$HOME/workspace/pytc`) is only for
+toolchain maintenance actions (`upgrade`, `pubself`, `runner`, ...). It is not
+the working directory for project actions.
+
 After `pane-new`, run `pytc.sh env-check <session>` and have
 the user establish missing credentials in the owned pane
 through normal host setup before launching.
@@ -71,16 +80,16 @@ through normal host setup before launching.
 ```bash
 PYTC=~/.config/opencode/skills/pytc/scripts/pytc.sh
 SID=$($PYTC session-new --pytc-dir "$PYTC_DIR" --path "$PROJECT")  # state: pane, ids, lifecycle
-$PYTC pane-new "$SID" checks                                       # owned, labeled pane in $PYTC_DIR
+$PYTC pane-new "$SID" checks                                       # owned, labeled pane in $PROJECT
 $PYTC env-check "$SID"
-$PYTC shell-launch "$SID"                                          # state: starting-container
+$PYTC shell-launch "$SID"                                          # runs ./run.sh --action shell in $PROJECT
 $PYTC wait-ready "$SID" [--timeout 300]                            # -> ready | host-return rc=N | unknown
 $PYTC submit "$SID" --container -- uv run poe all                  # -> command id
 $PYTC wait "$SID" <command-id> --timeout 900                       # -> rc=N | host-return-early | unknown
 $PYTC read "$SID" <command-id>                                     # evidence between BEGIN/DONE markers
 $PYTC container-exit "$SID"                                        # from container-ready only
 $PYTC wait-host "$SID"                                             # HOST_RETURN + host shell readiness
-$PYTC submit "$SID" --host -- ./run.sh --action publish --path "$PROJECT"
+$PYTC submit "$SID" --host -- ./run.sh --action publish            # project root, no --path
 $PYTC wait "$SID" <command-id> --timeout 1800
 $PYTC close "$SID"
 ```
@@ -91,8 +100,10 @@ Rules:
   HOST_RETURN before READY means startup failed — even with rc=0 — report
   and inspect output. A timeout with neither marker is unknown: read the
   pane; if the image predates readiness support (no marker ever appears),
-  tell the user to rebuild (`./run.sh --action upgrade`) — a newer host
-  script with an old image is not sufficient.
+  tell the user to rebuild the project image with the PyTC toolchain checkout
+  (`<toolchain>/run.sh --action upgrade --path <project>`) — a newer host
+  script with an old image is not sufficient. This is a toolchain maintenance
+  action, not a project action.
 - If shell startup fails and you retry the launch, create a **new session**
   (`session-new` + fresh pane if needed): markers are session-scoped and a
   stale HOST_RETURN line in scrollback would otherwise match immediately.
@@ -169,7 +180,7 @@ the "devstack" action, if environment and tenancy are not specified in the
 prompt ask the user.
 
 ```sh
-./run.sh --action devstack --path ~/mounted/project -E [ask] -N [ask]
+./run.sh --action devstack -E [ask] -N [ask]
 ```
 Once the stack is up:
 

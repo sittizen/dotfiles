@@ -38,6 +38,13 @@ I can get confused during a long session; after each round of answers is submitt
 dispatch a sub-agent to check current decision tree for inconsistencies, if any are found ask me for clarifications and reshape
 the tree accordingly before continuing.
 
+# during the session
+
+## challenge against the glossary
+When the user uses a term that conflicts with the existing language in docs/projectBrief.md, call it out immediately.
+## Update docs/projectBrief.md##Domain Glossary
+When a new term is resolved in a settled decision, update docs/projectBrief.md right there.
+
 # closing condition
 
 The session is done when the frontier is empty: every branch of the design tree visited, nothing left silently assumed.

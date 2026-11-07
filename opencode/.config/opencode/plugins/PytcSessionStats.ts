@@ -11,7 +11,7 @@
  * chat message without running the session loop.
  */
 import { matchesCommand, parseArguments, SESSION_STATS_COMMAND } from "./session-stats/command";
-import { buildReport, collectLangfuse } from "./session-stats/aggregate";
+import { collectReport } from "./session-stats/aggregate";
 import { FatalStatsError, UsageError, describeError } from "./session-stats/errors";
 import { renderFatalError, renderReport, renderUsageError } from "./session-stats/render";
 import { createLangfuseSource, createOpenCodeSource, loadPytcLangfuseConfig } from "./session-stats/sources";
@@ -119,16 +119,11 @@ export const createTuiPlugin = (deps: SessionStatsDeps = {}): TuiPluginModule =>
       try {
         const { source, userId } = getLangfuse();
         const openCodeSource: OpenCodeSource = createOpenCode(api.client);
-        const [tree, modelLimits, langfuse] = await Promise.all([
-          openCodeSource.getTree(sessionID),
-          openCodeSource.getModelLimits(),
-          collectLangfuse(source, sessionID, userId),
-        ]);
-        const report = buildReport({
-          tree,
-          modelLimits,
-          traces: langfuse.traces,
-          observationsByTraceId: langfuse.observationsByTraceId,
+        const report = await collectReport({
+          openCodeSource,
+          langfuseSource: source,
+          userId,
+          sessionId: sessionID,
         });
         await postMessage(renderReport(report));
       } catch (error) {

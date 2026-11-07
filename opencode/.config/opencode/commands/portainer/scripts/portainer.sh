@@ -155,26 +155,52 @@ config_path() {
   printf '%s/pytc/config.json\n' "${XDG_CONFIG_HOME:-$HOME/.config}"
 }
 
+pytc_vault_config_key() {
+  printf 'kv/loc/%s/conf_pytc\n' "$(whoami)"
+}
+
+load_vault_global_config() {
+  command -v vault >/dev/null 2>&1 || return 1
+  local conf
+  conf="$(vault read -format json "$(pytc_vault_config_key)" 2>/dev/null)" || return 1
+  jq -e '(.data | type) == "object"' >/dev/null 2>&1 <<<"$conf" || return 1
+  jq -c '.data' <<<"$conf"
+}
+
 load_global_config() {
-  local cfg
+  local cfg vault_json source_json source_name
   cfg="$(config_path)"
-  if [[ ! -r "$cfg" ]]; then
-    pt_fail CONFIG_MISSING "global config is not readable: $cfg"
+
+  if vault_json="$(load_vault_global_config)" && [[ -n "$vault_json" ]]; then
+    source_json="$vault_json"
+    source_name="Vault $(pytc_vault_config_key)"
+  else
+    if [[ ! -r "$cfg" ]]; then
+      pt_fail CONFIG_MISSING "global config is not readable and Vault has no $(pytc_vault_config_key): $cfg"
+    fi
+    local mode
+    mode="$(stat -c '%a' "$cfg" 2>/dev/null || true)"
+    if [[ "$mode" != "600" ]]; then
+      pt_fail CONFIG_PERMS "global config must be chmod 600 (got '${mode:-unknown}'): $cfg"
+    fi
+    if ! jq -e '(.portainer | type) == "object"' "$cfg" >/dev/null 2>&1; then
+      pt_fail CONFIG_INVALID "global config is not valid JSON or lacks a portainer object: $cfg"
+    fi
+    printf 'Warning: PyTC configuration read from %s; move it to Vault at %s.\n' \
+      "$cfg" "$(pytc_vault_config_key)" >&2
+    source_json="$(cat "$cfg")"
+    source_name="$cfg"
   fi
-  local mode
-  mode="$(stat -c '%a' "$cfg" 2>/dev/null || true)"
-  if [[ "$mode" != "600" ]]; then
-    pt_fail CONFIG_PERMS "global config must be chmod 600 (got '${mode:-unknown}'): $cfg"
+
+  if ! jq -e '(.portainer | type) == "object"' >/dev/null 2>&1 <<<"$source_json"; then
+    pt_fail CONFIG_INVALID "global config is not valid JSON or lacks a portainer object: $source_name"
   fi
-  if ! jq -e '(.portainer | type) == "object"' "$cfg" >/dev/null 2>&1; then
-    pt_fail CONFIG_INVALID "global config is not valid JSON or lacks a portainer object: $cfg"
-  fi
-  BASE_URL="$(jq -r '(.portainer.base_url // empty) | if type=="number" then tostring else . end' "$cfg")"
-  SECRET_KEY="$(jq -r '(.portainer.secret_key // empty) | if type=="number" then tostring else . end' "$cfg")"
+  BASE_URL="$(jq -r '(.portainer.base_url // empty) | if type=="number" then tostring else . end' <<<"$source_json")"
+  SECRET_KEY="$(jq -r '(.portainer.secret_key // empty) | if type=="number" then tostring else . end' <<<"$source_json")"
   [[ -n "$BASE_URL" ]] \
-    || pt_fail CONFIG_INVALID "missing non-empty portainer.base_url in $cfg"
+    || pt_fail CONFIG_INVALID "missing non-empty portainer.base_url in $source_name"
   [[ -n "$SECRET_KEY" ]] \
-    || pt_fail CONFIG_INVALID "missing non-empty portainer.secret_key in $cfg"
+    || pt_fail CONFIG_INVALID "missing non-empty portainer.secret_key in $source_name"
 
   while [[ "$BASE_URL" == */ ]]; do BASE_URL="${BASE_URL%/}"; done
   [[ "$BASE_URL" == */api ]] && BASE_URL="${BASE_URL%/api}"
