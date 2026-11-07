@@ -169,6 +169,7 @@ alias am="alsamixer"
 alias lit="/mnt/media/data/home/sc/node_modules/.bin/lit"
 alias zt="zathura"
 alias ce="clear"
+alias us="./run.sh --action shell"
 
 # functions
 v() { # retrieves vault token
@@ -252,8 +253,5 @@ eval "$(fzf --zsh)"
 eval "$(zoxide init zsh)"
 [ -f ~/.herdr_completion ] && source ~/.herdr_completion 2>/dev/null
 
-# pytc in_container script (added by ./run.sh)
-export PATH="$HOME/.local/bin:$PATH"
 
-# opencode
-export PATH=/home/simone.cittadini@gruppomol.lcl/.opencode/bin:$PATH
+export PATH="/home/simone.cittadini@gruppomol.lcl/.local/bin:$PATH"
