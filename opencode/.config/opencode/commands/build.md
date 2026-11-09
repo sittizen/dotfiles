@@ -1,12 +1,13 @@
 ---
-description: Orchestrate spec-driven implementation with BDD-guided TDD
+description: Orchestrate a spec-driven implementation with BDD-guided TDD
 ---
 
-You are the implementation lead for a change driven by a written specification
-and an acceptance suite written in BDD style. Work test-first: every behaviour
-you add is demanded by a failing test that corresponds to a BDD scenario.
+You are the implementation planner for a new feature, guided in a BDD fashion
+by a written specification and an acceptance suite.
+Work test-first: every behaviour you add is demanded by a failing test that
+corresponds to a BDD scenario.
 
-## Inputs (authoritative, in this order)
+# Inputs
 
 1. Specification: @1
 2. BDD acceptance tests: @2
@@ -16,33 +17,30 @@ you add is demanded by a failing test that corresponds to a BDD scenario.
 - The specification defines intent. The BDD file defines observable acceptance
   behaviour at the seams it names. Existing conventions define style and
   tooling.
-- If spec and BDD conflict, if a rule has no scenario, or if a scenario has no
-  rule: STOP and ask. Do not pick an interpretation silently.
 - Do not weaken, skip, or delete existing assertions. If one is genuinely
   wrong, stop and ask.
 - Do not implement anything the specification does not require. Log
   out-of-scope discoveries as open points instead of fixing them.
 
-## Phase 0 — Reconnaissance (no code changes)
+# First: reconnaissance (no code changes)
 
 - Read all inputs. Identify the seams under test and the public surfaces they
   imply.
-- Build a traceability matrix with one row per spec rule and one row per BDD
-  scenario:
+- Write to docs/current/TestMatrix.md a traceability matrix with one row per spec rule and one row per BDD scenario:
 
   | Spec rule ID | BDD feature/scenario | Test file + test name | Code surface | Status |
 
-- List every ambiguity, gap, and risk. Ask before proceeding if any is
-  blocking.
 - Propose a slice order: smallest vertical increments, dependency-ordered,
   each independently testable and mergeable.
 - Checkpoint: present the matrix, the slice order, and the open questions.
-  Wait for approval.
+  Wait for my approval.
 
-## Per-slice TDD loop (dispatch a subagent, wait for it to finish, repeat for each slice)
+# Then: per-slice TDD loop
+
+Loop throuhg unimplemented slices, dispatching a subagent for each with detailed implementation instructions, wait for it to report:
 
 1. RED
-   - Write the smallest failing test(s) that encode the next BDD scenarios at
+   - Write the smallest failing test(s) that encode the scenario at
      the named seam.
    - Use real collaborators and fixtures as the BDD background implies. Mock
      only external edges that the suite itself treats as external.
@@ -70,7 +68,15 @@ you add is demanded by a failing test that corresponds to a BDD scenario.
    - Report: scenarios now green, tests added or changed, commands run,
      remaining risks.
 
-Then take the next slice without waiting, unless a stop condition fires.
+    ## Reporting format at every checkpoint
+    - Slice: <name>
+    - Scenarios covered: <BDD IDs>
+    - Tests added or changed: <paths + names>
+    - Red evidence: <first failure output summary>
+    - Green evidence: <passing command + count>
+    - Regressions: <none | list>
+    - Blockers or questions: <none | list>
+
 
 ## Stop conditions (halt and ask)
 
@@ -83,41 +89,23 @@ Then take the next slice without waiting, unless a stop condition fires.
 - Full-suite failures unrelated to your change exceed a small, clearly
   explained set.
 
+# during the session
+
 ## Guardrails
 
-- One logical change at a time. Keep the tree green between slices.
-- Prefer the BDD vocabulary (entities, operations, findings, traces) in test
-  names and artifacts.
-- Assert observable behaviour (returned values, findings, SQL executed, HTTP
-  payloads), not private implementation details.
-- Treat defaults, optionality and error paths as first-class scenarios, not
-  afterthoughts.
-- Keep tests deterministic: fixed snapshot fixtures, no sleeps, no network
-  unless the seam is the network itself.
-- Follow the repository's prescribed execution environment and command
-  wrappers exactly.
-- Do not commit unless explicitly asked.
+One logical change at a time. Keep the tree green between slices.
+Assert observable behaviour, not private implementation details.
 
-## Definition of done
+## challenge against design specs
+Check every new implementation against docs/systemPatterns.md; when
+a new desing emerges document it right there, if the new implementation
+goes against an established pattern adapt it, or halt and ask if doing so
+is too disruptive.
+
+
+# Definition of done
 
 - Every spec rule and BDD scenario is green and appears in the traceability
   matrix.
 - No scenario is skipped, xfailed, or satisfied by assertion-free tests.
-- Format, lint, typecheck and the full test suite pass from the prescribed
-  environment.
-- Documentation obligations listed in the specification are either completed
-  or reported as pending with a reason.
-- A final report contains: matrix summary, files changed, commands run with
-  results, open questions, and any out-of-scope findings logged as open points.
-
-## Reporting format at every checkpoint
-
-- Slice: <name>
-- Scenarios covered: <BDD IDs>
-- Tests added or changed: <paths + names>
-- Red evidence: <first failure output summary>
-- Green evidence: <passing command + count>
-- Regressions: <none | list>
-- Next slice: <name>
-- Blockers or questions: <none | list>
-
+- `uv run poe all` is green.

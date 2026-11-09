@@ -2,7 +2,7 @@
 description: Interview the user relentlessly to sharpen a plan or design till a comprehensive specification document can be composed.
 ---
 
-Interview me relentlessly about every aspect of the idea descriped in $1 until we reach a shared understanding.
+Interview me relentlessly about every aspect of the idea described in $1 until we reach a shared understanding.
 Map this as a **design tree**: every decision branches into the decisions that hang off it.
 
 Work the tree in **rounds**.
@@ -10,7 +10,7 @@ The **frontier** is every decision whose prerequisites are already settled: the 
 Ask the whole frontier in one round: number each question and give your recommended answer, then wait for my answers before next round.
 
 
-# main loop
+# Main loop
 
 While working the rounds format each round like so:
 ```
@@ -35,15 +35,14 @@ dispatch a sub-agent to find it; don't ask me for anything you could look up you
 The **decisions** are mine; put each fact to me and wait.
 
 I can get confused during a long session; after each round of answers is submitted, before looping to next round of questions,
-dispatch a sub-agent to check current decision tree for inconsistencies, if any are found ask me for clarifications and reshape
-the tree accordingly before continuing.
+dispatch a sub-agent to check current decision tree for inconsistencies, if any are found ask me for clarifications and reshape the tree accordingly before continuing.
 
 # during the session
 
 ## challenge against the glossary
 When the user uses a term that conflicts with the existing language in docs/projectBrief.md, call it out immediately.
 ## Update docs/projectBrief.md##Domain Glossary
-When a new term is resolved in a settled decision, update docs/projectBrief.md right there.
+When a new term is resolved in a settled decision, update docs/projectBrief.md##Domain Glossary right there.
 
 # closing condition
 
