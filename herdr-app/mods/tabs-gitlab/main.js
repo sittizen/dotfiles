@@ -31,11 +31,28 @@ function isInside(root, path) {
   return p === r || p.startsWith(r.endsWith("/") ? r : `${r}/`);
 }
 
+function isGitlabRemote(output) {
+  for (const line of String(output ?? "").split("\n")) {
+    const url = line.trim().split(/\s+/)[1];
+    if (!url) continue;
+    let host = null;
+    if (/^[a-z][a-z0-9+.-]*:\/\//i.test(url)) {
+      try { host = new URL(url).hostname; } catch {}
+    } else {
+      const match = url.match(/^(?:[^@/]+@)?([^:/]+):/);
+      if (match && !/^[a-z]:[\\/]/i.test(url)) host = match[1];
+    }
+    if (host?.toLowerCase().includes("gitlab")) return true;
+  }
+  return false;
+}
+
 export default class Tabs extends View {
   init(_props, cx) {
     this.pressed = null;
     this.panels = JSON.parse(localStorage.getItem("panels") ?? "{}");
     this.git = false;
+    this.gitlab = false;
     this.gitKey = null;
     this.repoRoot = null;
     this.gitOn = null;
@@ -51,15 +68,20 @@ export default class Tabs extends View {
     this.gitKey = key;
     if (!cwd) {
       this.git = false;
+      this.gitlab = false;
       this.repoRoot = null;
       this.gitOn = null;
       return;
     }
     if (this.git && this.gitOn === on && isInside(this.repoRoot, cwd)) return;
     cx.spawn(async (cx) => {
-      const r = await exec("git", ["rev-parse", "--show-toplevel"], { cwd, on }).catch(() => null);
+      const [r, remotes] = await Promise.all([
+        exec("git", ["rev-parse", "--show-toplevel"], { cwd, on }).catch(() => null),
+        exec("git", ["remote", "-v"], { cwd, on }).catch(() => null),
+      ]);
       if (this.gitKey !== key) return;
       this.git = r?.code === 0;
+      this.gitlab = this.git && isGitlabRemote(remotes?.stdout);
       this.repoRoot = this.git ? r.stdout.trim() : null;
       this.gitOn = on;
       cx.notify();
@@ -137,7 +159,7 @@ export default class Tabs extends View {
       ? Math.max(10, (root.traffic_lights[0] + 64) / settings().zoom - (sidebar?.hidden ? 0 : sidebar?.size?.px ?? 0))
       : 10;
     const panel = find(root, "panel"), body = find(root, "panel-body");
-    const enabled = this.git ? ["gitlab"] : [];
+    const enabled = this.gitlab ? ["gitlab"] : [];
     this.syncPanel(space, panel, body, enabled);
     const panelButton = (id, label, icon) => {
       const on = panel && !panel.hidden && body?.active === id;

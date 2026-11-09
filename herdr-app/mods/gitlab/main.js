@@ -56,6 +56,20 @@ const STATUS = {
 
 const statusColor = (t, status) => t[STATUS[status] ?? "muted"] ?? t.muted;
 
+const NOT_GITLAB = [
+  "point to a known gitlab host",
+  "no gitlab remotes found",
+  "no gitlab projects found from remotes",
+  "repository is not on a gitlab host",
+  "not a gitlab repository",
+  "could not determine base repository",
+];
+
+function isNotGitlab(message) {
+  const text = String(message ?? "").toLowerCase();
+  return NOT_GITLAB.some((marker) => text.includes(marker));
+}
+
 function latestPerRef(pipelines) {
   const cutoff = Date.now() - 24 * 60 * 60 * 1000;
   const recent = pipelines.filter((p) => (Date.parse(p.created_at ?? p.updated_at ?? "") || 0) >= cutoff);
@@ -85,6 +99,7 @@ export default class Gitlab extends View {
     this.issues = [];
     this.pipelines = [];
     this.error = null;
+    this.unavailable = false;
     this.loading = false;
     this.shown = false;
     this.lastChecked = 0;
@@ -97,6 +112,7 @@ export default class Gitlab extends View {
     this.issues = [];
     this.pipelines = [];
     this.error = message;
+    this.unavailable = false;
   }
 
   refresh(cx, force = false) {
@@ -121,6 +137,7 @@ export default class Gitlab extends View {
     this.issues = [];
     this.pipelines = [];
     this.error = null;
+    this.unavailable = false;
     cx.spawn(async (cx) => {
       let root = null, error = null;
       try {
@@ -136,6 +153,7 @@ export default class Gitlab extends View {
         this.loading = false;
         this.lastChecked = Date.now();
         this.error = error;
+        this.unavailable = false;
         cx.notify();
         return;
       }
@@ -189,11 +207,16 @@ export default class Gitlab extends View {
       if (gen !== this.generation) return;
       const issues = this.read(issueResult, "issues");
       const pipelines = this.read(pipelineResult, "pipelines");
-      this.issues = issues.data;
-      this.pipelines = latestPerRef(pipelines.data);
-      this.error = [issues.error, pipelines.error].filter(Boolean).join("\n") || null;
+      const notGitlab = isNotGitlab(issues.error) || isNotGitlab(pipelines.error);
+      this.issues = notGitlab ? [] : issues.data;
+      this.pipelines = notGitlab ? [] : latestPerRef(pipelines.data);
+      this.error = notGitlab ? null : [issues.error, pipelines.error].filter(Boolean).join("\n") || null;
+      this.unavailable = notGitlab;
     } catch (e) {
-      if (gen === this.generation) this.error = String(e);
+      if (gen === this.generation) {
+        this.error = String(e);
+        this.unavailable = false;
+      }
     } finally {
       if (gen === this.generation) {
         this.loading = false;
@@ -254,6 +277,7 @@ export default class Gitlab extends View {
     this.shown = isShown(layout(), "gitlab");
     this.refresh(cx);
     if (this.shown && !this.loading && Date.now() - this.lastChecked > 30000) this.refresh(cx, true);
+    if (this.unavailable) return div().size_full();
     const t = theme();
     const repo = this.root ? normPath(this.root).split("/").filter(Boolean).pop() ?? "" : "";
     return v_flex().id("gitlab").size_full().min_h(0).rounded(10).overflow_hidden().bg(t.background).border_1().border_color(t.border).text_color(t.foreground).text_size(13)
