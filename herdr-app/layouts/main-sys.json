@@ -128,13 +128,6 @@
                   "type": "stack",
                   "children": [
                     {
-                      "id": "changes",
-                      "type": "block",
-                      "content": {
-                        "mod": "changes"
-                      }
-                    },
-                    {
                       "id": "gitlab",
                       "type": "block",
                       "content": {
@@ -142,7 +135,7 @@
                       }
                     }
                   ],
-                  "active": "changes"
+                  "active": "gitlab"
                 }
               ],
               "size": {

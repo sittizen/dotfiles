@@ -76,7 +76,7 @@ export default class Tabs extends View {
       this.space = space.id; this.pending = null;
       if (!(first && !(space.id in this.panels))) {
         const stored = this.panels[space.id] ?? null;
-        const fallback = enabled.includes("changes") ? "changes" : enabled[0] ?? null;
+        const fallback = enabled[0] ?? null;
         const want = enabled.includes(stored) ? stored : stored ? fallback : null;
         if (want !== now) {
           this.pending = { want, until: Date.now() + 1000 };
@@ -93,7 +93,7 @@ export default class Tabs extends View {
     }
     // The shown panel stopped being available (left the repo, panel removed).
     if (now && !enabled.includes(now)) {
-      const fallback = enabled.includes("changes") ? "changes" : enabled[0] ?? null;
+      const fallback = enabled[0] ?? null;
       this.pending = { want: fallback, until: Date.now() + 1000 };
       if (fallback) { run("layout.select", { stack: "panel-body", child: fallback }); run("layout.show", { id: "panel" }); }
       else run("layout.hide", { id: "panel" });
@@ -137,8 +137,7 @@ export default class Tabs extends View {
       ? Math.max(10, (root.traffic_lights[0] + 64) / settings().zoom - (sidebar?.hidden ? 0 : sidebar?.size?.px ?? 0))
       : 10;
     const panel = find(root, "panel"), body = find(root, "panel-body");
-    const panels = shared("workspace.panels") ?? ["files", "changes"];
-    const enabled = this.git ? (panels.includes("gitlab") ? panels : [...panels, "gitlab"]) : panels.filter((p) => p !== "gitlab");
+    const enabled = this.git ? ["gitlab"] : [];
     this.syncPanel(space, panel, body, enabled);
     const panelButton = (id, label, icon) => {
       const on = panel && !panel.hidden && body?.active === id;
@@ -155,9 +154,7 @@ export default class Tabs extends View {
       .on_scroll_wheel(e => { if (Math.abs(e.delta.y) >= 1) run(e.delta.y > 0 ? "tab.prev" : "tab.next"); })
       .child(h_flex().id("tab-scroll").flex_1().min_w(0).h_full().items_center().gap(3).overflow_x_scrollbar().children(shown.map(item)))
       .child(button("tab-new", "+", () => openOverlay({ mod: "new-menu", kind: "popup", width: 250, height: 512 })))
-      .when(enabled.includes("files"), el => el.child(panelButton("files", "Files", "mods/files/file.svg")))
-      .when(enabled.includes("changes"), el => el.child(panelButton("changes", "Changes", "mods/changes/changes.svg")))
-      .when(this.git && enabled.includes("gitlab"), el => el.child(panelButton("gitlab", "Gitlab", "mods/gitlab/gitlab.svg")))
+      .when(enabled.includes("gitlab"), el => el.child(panelButton("gitlab", "Gitlab", "mods/gitlab/gitlab.svg")))
       .when(w?.buttons, el => el.child(button("minimize", w.platform === "windows" ? svg("mods/tabs-gitlab/win-min.svg").size(16) : "−", () => run("window.minimize")))
         .child(button("maximize", w.platform === "windows" ? svg(`mods/tabs-gitlab/${w.maximized ? "win-restore" : "win-max"}.svg`).size(16) : "□", () => run("window.maximize")))
         .child(button("close-window", w.platform === "windows" ? svg("mods/tabs-gitlab/win-close.svg").size(16) : svg("mods/pane/close.svg").size(13), () => run("window.close"))));
