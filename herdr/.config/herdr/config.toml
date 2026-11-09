@@ -62,7 +62,7 @@ description = "kpcli password manager"
 [[keys.command]]
 key = "ctrl+f4"
 type = "popup"
-command = "~/.local/share/mise/shims/lazygit"
+command = "~/.config/herdr/lazygit-vault"
 width = "90%"
 height = "90%"
 description = "lazygit"
@@ -143,4 +143,7 @@ agent_panel_sort = "spaces"
 
 show_agent_labels_on_pane_borders = false
 [ui.toast]
-delivery = "system"
+delivery = "herdr"
+
+[ui.sound]
+enabled = false
