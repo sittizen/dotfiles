@@ -4,6 +4,7 @@
     "enabled": false
   },
   "font": "FiraCode Nerd Font Propo Med",
+  "font_size": 16,
   "ui_font": "FiraCode Nerd Font Propo Med",
   "font_ligatures": true,
   "minimum_contrast": 1,
