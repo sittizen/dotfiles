@@ -1,0 +1,10 @@
+{
+  "zoom": 1.2,
+  "sounds": {
+    "enabled": false
+  },
+  "font_ligatures": true,
+  "minimum_contrast": 1,
+  "theme": "ghostty-oceanic-next",
+  "telemetry": false
+}

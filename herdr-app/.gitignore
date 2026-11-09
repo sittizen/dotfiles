@@ -1,0 +1,29 @@
+# Runtime state written by Herdr
+view.json
+shared.json
+seen.json
+installed.json
+window.json
+windows.json
+herdr-app.sock
+*.error
+*.corrupt-*
+*.old-*
+*.reset-*
+
+# Per-mod state and layout click state
+data/
+layouts/.state/
+
+# Rewritten by Herdr on every start
+AGENTS.md
+gpui-kit.d.ts
+herdr.d.ts
+frame/
+icons/
+jsconfig.json
+
+# Update cache
+update-notes.json
+update-notes-cache.md
+update-notes-media/
