@@ -3,6 +3,8 @@
   "sounds": {
     "enabled": false
   },
+  "font": "FiraCode Nerd Font Propo Med",
+  "ui_font": "FiraCode Nerd Font Propo Med",
   "font_ligatures": true,
   "minimum_contrast": 1,
   "theme": "ghostty-oceanic-next",
