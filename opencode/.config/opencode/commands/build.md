@@ -95,6 +95,7 @@ Loop throuhg unimplemented slices, dispatching a subagent for each with detailed
 
 One logical change at a time. Keep the tree green between slices.
 Assert observable behaviour, not private implementation details.
+Name test files after Gherkin titles : test_<NN>_<desc>.py
 
 ## challenge against design specs
 Check every new implementation against docs/systemPatterns.md; when
