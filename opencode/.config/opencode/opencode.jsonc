@@ -54,12 +54,12 @@
   "permission": {
     "read": {
       "*": "allow",
-      "*docs/obsolete/*": "deny",
+      "*docs/archived/*": "deny",
       "*docs/todo/*": "deny"
     },
     "edit": {
       "*": "allow",
-      "*docs/obsolete/*": "deny",
+      "*docs/archived/*": "deny",
       "*docs/todo/*": "deny"
     }
   },

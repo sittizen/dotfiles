@@ -7,9 +7,15 @@ permission:
     "/tmp/opencode/show/**": allow
   bash:
     "*": deny
-    "grep": allow
-    "head": allow
-    "tail": allow
+    "in_container": allow
+    "ls *": allow
+    "rg *": allow
+    "cat *": allow
+    "echo *": allow
+    "git *": allow
+    "grep *": allow
+    "head *": allow
+    "tail *": allow
     "open *": allow
     "xdg-open *": allow
 ---
